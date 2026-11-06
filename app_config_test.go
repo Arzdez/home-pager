@@ -15,6 +15,63 @@ func panelConfig(t *testing.T, raw string) string {
 	return path
 }
 
+func TestContainerConfigInitialization(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "panel-config", "home-pager.yaml")
+	cfg, err := settingsFromArgs([]string{"-init-conf", "home-pager.docker.yaml", "-conf", path})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.Listen != "0.0.0.0:8090" {
+		t.Fatal("Incorrect listen default")
+	}
+	for got, want := range map[string]string{cfg.ConfigDir: "/config", cfg.ImagesDir: "/images", cfg.IconsDir: "/icons"} {
+		if !filepath.IsAbs(want) {
+			want = filepath.Join(filepath.Dir(path), want)
+		}
+		want, _ = filepath.Abs(want)
+		if got != want {
+			t.Fatalf("Incorrect path: %s, expected %s", got, want)
+		}
+	}
+	if len(cfg.overrides) != 0 {
+		t.Fatal("Initialization must not be reported as a runtime override")
+	}
+	original, err := os.ReadFile("home-pager.docker.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	created, err := os.ReadFile(path)
+	if err != nil || string(created) != string(original) {
+		t.Fatal("Default configuration was not copied")
+	}
+	custom := "listen: 127.0.0.1:9999\nconfig_dir: ./custom\npassword: keep-this\n"
+	if err := os.WriteFile(path, []byte(custom), 0600); err != nil {
+		t.Fatal(err)
+	}
+	cfg, err = settingsFromArgs([]string{"-init-conf", "missing-template.yaml", "-conf", path})
+	if err != nil || cfg.Listen != "127.0.0.1:9999" || cfg.Password != "keep-this" {
+		t.Fatal("Persisted configuration was overwritten")
+	}
+	unchanged, _ := os.ReadFile(path)
+	if string(unchanged) != custom {
+		t.Fatal("Existing file changed")
+	}
+}
+
+func TestConfigInitializationFailure(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "new", "home-pager.yaml")
+	bad := panelConfig(t, "unknown_parameter: value\n")
+	if _, err := settingsFromArgs([]string{"-init-conf", bad, "-conf", path}); err == nil {
+		t.Fatal("Invalid template accepted")
+	}
+	if _, err := os.Stat(path); !os.IsNotExist(err) {
+		t.Fatal("Invalid template created a configuration file")
+	}
+	if _, err := settingsFromArgs([]string{"-init-conf", "nonexistent-template", "-conf", path}); err == nil {
+		t.Fatal("Missing template accepted")
+	}
+}
+
 func TestPanelConfigPathsAndOptionalPassword(t *testing.T) {
 	t.Setenv("HOMEPAGER_PASSWORD", "old-environment-password")
 	path := panelConfig(t, "listen: '0.0.0.0:8090'\nconfig_dir: ./homepage\nimages_dir: ./public/images\nicons_dir: ./public/icons\npassword: ''\n")

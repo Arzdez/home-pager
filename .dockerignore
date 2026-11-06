@@ -3,6 +3,8 @@
 config
 *.exe
 home-pager
+home-pager-linux-*
+dist
 *.test
 .env
 home-pager.yaml

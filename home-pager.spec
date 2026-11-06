@@ -2,7 +2,7 @@
 %define _enable_debug_packages 0
 
 Name: home-pager
-Version: 0.1.1
+Version: 0.1.2
 Release: alt1
 
 Summary: Web configuration editor for Homepage dashboards
@@ -84,6 +84,10 @@ fi
 %dir %attr(0750,%name,%name) /var/lib/%name/icons
 
 %changelog
+* Fri Nov 06 2026 Evgenii Sozonov <infagot@gmail.com> 0.1.2-alt1
+- Initialize a missing startup configuration from an explicit template.
+- Bundle container defaults and persist GUI settings in a directory volume.
+
 * Fri Nov 06 2026 Evgenii Sozonov <infagot@gmail.com> 0.1.1-alt1
 - Add GUI editing of startup configuration with revision checks and backups.
 - Allow the service to update its dedicated configuration directory.

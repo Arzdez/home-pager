@@ -32,6 +32,7 @@ func settingsFromArgs(args []string) (appSettings, error) {
 	cfg := appSettings{Listen: "127.0.0.1:8090", ConfigDir: "./config", ImagesURL: "/images", IconsURL: "/icons", Password: os.Getenv("HOMEPAGER_PASSWORD")}
 	flags := flag.NewFlagSet("home-pager", flag.ContinueOnError)
 	conf := flags.String("conf", "", "Path to panel YAML configuration (default: ./home-pager.yaml, if present)")
+	initConf := flags.String("init-conf", "", "Initialize a missing configuration file from this template (used by the container image)")
 	// Keep older launch scripts working; the configuration file is the primary interface.
 	listen := flags.String("listen", cfg.Listen, "Override listen address")
 	dir := flags.String("config", cfg.ConfigDir, "Override Homepage configuration directory")
@@ -57,8 +58,13 @@ func settingsFromArgs(args []string) (appSettings, error) {
 	}
 	cfg.configPath = configPath
 	for name := range visited {
-		if name != "conf" {
+		if name != "conf" && name != "init-conf" {
 			cfg.overrides = append(cfg.overrides, name)
+		}
+	}
+	if *initConf != "" {
+		if err := initializePanelConfig(*initConf, path); err != nil {
+			return cfg, err
 		}
 	}
 	f, err := os.Open(path)
@@ -143,6 +149,53 @@ func settingsFromArgs(args []string) (appSettings, error) {
 		return cfg, err
 	}
 	return cfg, nil
+}
+
+// Create only when missing: a persisted configuration must survive image updates.
+func initializePanelConfig(template, target string) error {
+	if _, err := os.Lstat(target); err == nil {
+		return nil
+	} else if !os.IsNotExist(err) {
+		return err
+	}
+	f, err := os.Open(template)
+	if err != nil {
+		return fmt.Errorf("Open default panel configuration: %w", err)
+	}
+	data, err := io.ReadAll(io.LimitReader(f, (1<<20)+1))
+	f.Close()
+	if err != nil {
+		return err
+	}
+	if len(data) > 1<<20 {
+		return errors.New("Default panel configuration exceeds 1 MiB")
+	}
+	if err := decodeServerSettings(data, &appSettings{}); err != nil {
+		return fmt.Errorf("Default panel configuration: %w", err)
+	}
+	if err := os.MkdirAll(filepath.Dir(target), 0750); err != nil {
+		return fmt.Errorf("Create panel configuration directory: %w", err)
+	}
+	out, err := os.OpenFile(target, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+	if os.IsExist(err) {
+		return nil
+	}
+	if err != nil {
+		return fmt.Errorf("Create panel configuration (check directory ownership and write permissions): %w", err)
+	}
+	_, writeErr := out.Write(data)
+	if writeErr == nil {
+		writeErr = out.Sync()
+	}
+	closeErr := out.Close()
+	if writeErr == nil {
+		writeErr = closeErr
+	}
+	if writeErr != nil {
+		_ = os.Remove(target)
+		return fmt.Errorf("Initialize panel configuration: %w", writeErr)
+	}
+	return nil
 }
 
 func (cfg appSettings) applyProxyEnvironment() error {

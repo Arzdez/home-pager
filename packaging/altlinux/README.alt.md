@@ -1,6 +1,6 @@
 # Home Pager для ALT Linux
 
-Пакет `home-pager`, версия `0.1.1-alt1`. Репозиторий содержит исходники,
+Пакет `home-pager`, версия `0.1.2-alt1`. Репозиторий содержит исходники,
 веб-интерфейс и Go-зависимости в `vendor`. При сборке доступ к сети не нужен;
 Node.js и npm не требуются. Нужен Go 1.23 или новее и ALT RPM/gear.
 
@@ -39,7 +39,7 @@ Gear экспортирует файлы из Git-коммита, поэтому
 Установите собранный RPM (от root), затем проверьте конфиг:
 
 ```sh
-rpm -Uvh home-pager-0.1.1-alt1.*.rpm
+rpm -Uvh home-pager-0.1.2-alt1.*.rpm
 editor /etc/home-pager/home-pager.yaml
 systemctl enable --now home-pager.service
 systemctl status home-pager.service
