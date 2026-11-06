@@ -10,6 +10,12 @@ RUN CGO_ENABLED=0 GOPROXY=off GOTOOLCHAIN=local go build -mod=vendor -buildvcs=f
 
 # Runtime stage: small Linux image; Go and Node.js are not required at runtime.
 FROM alpine:3.23
+LABEL org.opencontainers.image.licenses="GPL-3.0-only"
+COPY LICENSE THIRD_PARTY_NOTICES.md /usr/share/licenses/home-pager/
+COPY web/THIRD_PARTY_LICENSES.txt /usr/share/licenses/home-pager/
+COPY vendor/github.com/HugoSmits86/nativewebp/LICENSE /usr/share/licenses/home-pager/nativewebp/LICENSE
+COPY vendor/golang.org/x/image/LICENSE /usr/share/licenses/home-pager/golang-x-image/LICENSE
+COPY vendor/gopkg.in/yaml.v3/LICENSE /usr/share/licenses/home-pager/yaml-v3/LICENSE
 # CA certificates are used for HTTPS image downloads. Default UID/GID: 1000.
 RUN apk add --no-cache ca-certificates && addgroup -g 1000 pager && adduser -D -u 1000 -G pager pager
 COPY --from=build /home-pager /usr/local/bin/home-pager

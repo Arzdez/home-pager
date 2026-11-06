@@ -131,5 +131,9 @@ To apply startup configuration changes without updating the image:
 docker compose -f compose.dockerhub.yaml restart home-pager
 ```
 
+Home Pager is licensed under **GNU GPL v3.0 only (`GPL-3.0-only`)**.
+The license and third-party notices are included in the image at
+`/usr/share/licenses/home-pager/`. Third-party components retain their own licenses.
+
 Recreating the container preserves its mounted data. `docker compose down -v`
 deletes named volumes, including the panel's startup configuration.

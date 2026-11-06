@@ -2,6 +2,7 @@
 
 const panelPreferencesKey = "home-pager.panel-preferences.v1";
 const panelDefaults = {
+  language: "ru",
   theme: "system",
   density: "comfortable",
   services: "collapsed",
@@ -21,11 +22,13 @@ function normalizePanelPreferences(input) {
       if (typeof input[key] === "boolean") settings[key] = input[key];
     } else {
       const allowed =
-        key === "theme"
-          ? ["system", "light", "dark"]
-          : key === "density"
-            ? ["comfortable", "compact"]
-            : ["collapsed", "groups", "all"];
+        key === "language"
+          ? ["ru", "en"]
+          : key === "theme"
+            ? ["system", "light", "dark"]
+            : key === "density"
+              ? ["comfortable", "compact"]
+              : ["collapsed", "groups", "all"];
       if (allowed.includes(input[key])) settings[key] = input[key];
     }
   }
@@ -115,13 +118,15 @@ function openPanelSettings() {
   const draft = { ...panelPreferences };
   let committed = false;
   openDialog(
-    "Настройки панели",
-    "Тема и отображение Home Pager. Настройки сохраняются в этом браузере; конфигурация и оформление самого Homepage не меняются.",
+    t("Настройки панели"),
+    t(
+      "Тема и отображение Home Pager. Настройки сохраняются в этом браузере; конфигурация и оформление самого Homepage не меняются.",
+    ),
   );
   const body = $("dialog-body");
   body.append(
     button(
-      "Конфигурация сервера: пути, подключение и пароль →",
+      t("Конфигурация сервера: пути, подключение и пароль →"),
       "secondary",
       () => {
         $("dialog").close();
@@ -140,29 +145,38 @@ function openPanelSettings() {
     });
     return input;
   }
-  choice("theme", "Тема панели", [
-    ["system", "Как в системе"],
-    ["light", "Светлая"],
-    ["dark", "Тёмная"],
+  choice(
+    "language",
+    t("Язык панели"),
+    [
+      ["ru", "Русский"],
+      ["en", "English"],
+    ],
+    t("Язык изменится после сохранения настроек и перезагрузки страницы."),
+  );
+  choice("theme", t("Тема панели"), [
+    ["system", t("Как в системе")],
+    ["light", t("Светлая")],
+    ["dark", t("Тёмная")],
   ]);
-  choice("density", "Плотность интерфейса", [
-    ["comfortable", "Обычная"],
-    ["compact", "Компактная"],
+  choice("density", t("Плотность интерфейса"), [
+    ["comfortable", t("Обычная")],
+    ["compact", t("Компактная")],
   ]);
   const expansion = [
-    ["collapsed", "Только названия — всё свёрнуто"],
-    ["groups", "Открыть группы, карточки оставить свёрнутыми"],
-    ["all", "Раскрывать все уровни"],
+    ["collapsed", t("Только названия — всё свёрнуто")],
+    ["groups", t("Открыть группы, карточки оставить свёрнутыми")],
+    ["all", t("Раскрывать все уровни")],
   ];
-  choice("services", "При открытии сервисов", expansion);
-  choice("bookmarks", "При открытии закладок", expansion);
+  choice("services", t("При открытии сервисов"), expansion);
+  choice("bookmarks", t("При открытии закладок"), expansion);
   for (const [key, title] of [
-    ["showHints", "Подсказки под названиями полей"],
-    ["showCounts", "Количество полей и элементов в заголовках"],
-    ["showTechnicalNames", "Технические имена параметров в заголовках"],
-    ["showRoles", "Подписи «Группа», «Сервис», «Виджет»"],
-    ["expandSearch", "Автоматически раскрывать результаты поиска"],
-    ["rememberSection", "При запуске открывать последний раздел"],
+    ["showHints", t("Подсказки под названиями полей")],
+    ["showCounts", t("Количество полей и элементов в заголовках")],
+    ["showTechnicalNames", t("Технические имена параметров в заголовках")],
+    ["showRoles", t("Подписи «Группа», «Сервис», «Виджет»")],
+    ["expandSearch", t("Автоматически раскрывать результаты поиска")],
+    ["rememberSection", t("При запуске открывать последний раздел")],
   ]) {
     const input = document.createElement("input");
     input.type = "checkbox";
@@ -179,7 +193,9 @@ function openPanelSettings() {
     make(
       "p",
       "hint",
-      "Ручное раскрытие сохраняется во время редактирования. После перехода в раздел или перезагрузки используется выбранное начальное состояние.",
+      t(
+        "Ручное раскрытие сохраняется во время редактирования. После перехода в раздел или перезагрузки используется выбранное начальное состояние.",
+      ),
     ),
   );
   $("dialog").addEventListener(
@@ -190,7 +206,7 @@ function openPanelSettings() {
     { once: true },
   );
   $("dialog-actions").append(
-    button("По умолчанию", "secondary", () => {
+    button(t("По умолчанию"), "secondary", () => {
       Object.assign(draft, panelDefaults);
       for (const [key, value] of Object.entries(draft)) {
         const input = $("panel-preference-" + key);
@@ -199,15 +215,34 @@ function openPanelSettings() {
       }
       applyPanelPreferences(draft);
     }),
-    button("Отмена", "secondary", () => $("dialog").close()),
-    button("Сохранить настройки", "primary", () => {
+    button(t("Отмена"), "secondary", () => $("dialog").close()),
+    button(t("Сохранить настройки"), "primary", () => {
+      const languageChanged = draft.language !== panelLanguage;
+      if (languageChanged && dirty) {
+        let message = document.getElementById("panel-language-error");
+        if (!message) {
+          message = make(
+            "p",
+            "error",
+            t(
+              "Сначала сохраните или отмените изменения Homepage, затем смените язык панели.",
+            ),
+          );
+          message.id = "panel-language-error";
+          message.setAttribute("role", "alert");
+          body.append(message);
+        }
+        return;
+      }
       try {
         localStorage.setItem(panelPreferencesKey, JSON.stringify(draft));
       } catch {
         const message = make(
           "p",
           "error",
-          "Браузер не разрешает сохранить настройки. Разрешите локальное хранилище и повторите.",
+          t(
+            "Браузер не разрешает сохранить настройки. Разрешите локальное хранилище и повторите.",
+          ),
         );
         message.setAttribute("role", "alert");
         body.append(message);
@@ -230,7 +265,11 @@ function openPanelSettings() {
         }
       }
       $("dialog").close();
-      toast("Настройки панели сохранены.");
+      if (languageChanged) {
+        reloadPanelLanguage();
+        return;
+      }
+      toast(t("Настройки панели сохранены."));
     }),
   );
 }

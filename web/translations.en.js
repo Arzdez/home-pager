@@ -1,0 +1,903 @@
+"use strict";
+
+// UI copy only. Never translate user configuration values.
+const englishStrings = {
+  "Добавить закладку": "Add bookmark",
+  "＋ Добавить закладку": "＋ Add bookmark",
+  "Укажите название группы или название и адрес закладки.":
+    "Enter a group name or a bookmark name and URL.",
+  "Параметр уже есть в конфигурации. Измените его в редакторе.":
+    "This parameter is already configured. Edit it in the editor.",
+  "Колонки карточек": "Card columns",
+  "Неподдерживаемое значение: ": "Unsupported value: ",
+  "Строка на всю ширину или вертикальный столбец":
+    "Full-width row or vertical column",
+  "Только иконки": "Icons only",
+  "Показывать закладки группы без подписей":
+    "Show group bookmarks without labels",
+  "От 1 до 8; используется при расположении в строку":
+    "From 1 to 8; used with row layout",
+  Превью: "Preview",
+  "◫ Превью": "◫ Preview",
+  "Вариант {0}": "Variant {0}",
+  "Вариант шаблона": "Template variant",
+  "Оформление может изменять только settings.yaml и custom.css":
+    "Appearance can only change settings.yaml and custom.css",
+  " изменён извне. Загрузите актуальные файлы перед сохранением оформления.":
+    " was changed externally. Reload the current files before saving appearance settings.",
+  "Неизвестное назначение изображения": "Unknown image purpose",
+  "Некорректный формат, качество или размер":
+    "Invalid format, quality, or dimensions",
+  "Укажите HTTP/HTTPS-ссылку на изображение без логина и пароля":
+    "Enter an HTTP/HTTPS image URL without a username or password",
+  "Не удалось разрешить имя сервера": "Could not resolve the server hostname",
+  "Загрузка разрешена только с публичных адресов интернета":
+    "Downloads are only allowed from public internet addresses",
+  "Некорректные настройки HTTP_PROXY/HTTPS_PROXY":
+    "Invalid HTTP_PROXY/HTTPS_PROXY settings",
+  "Слишком много перенаправлений": "Too many redirects",
+  "Сервер изображения вернул HTTP ": "The image server returned HTTP ",
+  "Изображение превышает 20 MiB": "Image exceeds 20 MiB",
+  "Истекло время загрузки изображения. Проверьте доступ к сайту с сервера Home Pager; если нужен прокси, задайте HTTPS_PROXY/HTTP_PROXY и перезапустите панель. Причина: ":
+    "Image download timed out. Check site access from the Home Pager server; if a proxy is required, set HTTPS_PROXY/HTTP_PROXY and restart the panel. Cause: ",
+  "Не удалось загрузить изображение: ": "Could not download image: ",
+  "Не удалось загрузить изображение": "Could not download image",
+  "Выберите формат JPEG, PNG или WebP": "Choose JPEG, PNG, or WebP format",
+  "Качество: 1–100; размеры: 0–8192 (0 — без ограничения)":
+    "Quality: 1–100; dimensions: 0–8192 (0 means unlimited)",
+  "Файл не является поддерживаемым изображением (JPEG, PNG, GIF, WebP)":
+    "Unsupported image file (supported: JPEG, PNG, GIF, WebP)",
+  "Слишком большое изображение: максимум 16 мегапикселей и 8192 пикселя по стороне":
+    "Image too large: maximum 16 megapixels and 8192 pixels per side",
+  "Не удалось декодировать изображение": "Could not decode image",
+  "Результат превышает 20 MiB; уменьшите разрешение":
+    "Output exceeds 20 MiB; reduce the resolution",
+  "Каталог изображений не должен быть символьной ссылкой":
+    "The image directory must not be a symbolic link",
+  "Другое изображение уже обрабатывается. Повторите позже.":
+    "Another image is being processed. Try again later.",
+  "Не удалось прочитать файл: максимум 20 MiB":
+    "Could not read file: maximum 20 MiB",
+  "Выберите один файл изображения": "Choose one image file",
+  "Некорректные параметры изображения": "Invalid image parameters",
+  "Ожидается один объект параметров изображения":
+    "Expected one image parameters object",
+  "Файл не найден": "File not found",
+  "Не удалось прочитать изображение или файл превышает 20 MiB":
+    "Could not read image or file exceeds 20 MiB",
+  "Некорректный путь изображения": "Invalid image path",
+  "Каталог иконок недоступен": "Icon directory unavailable",
+  "Не удалось прочитать каталог иконок": "Could not read icon directory",
+  "Изображение не найдено": "Image not found",
+  "Файл изменён другим пользователем. Загрузите актуальную версию перед сохранением.":
+    "The file was changed by another user. Reload the latest version before saving.",
+  "Путь стартового конфига не задан": "Startup configuration path is not set",
+  "Нужен обычный конфиг-файл размером до 1 MiB; символьные ссылки не поддерживаются":
+    "A regular configuration file up to 1 MiB is required; symbolic links are not supported",
+  "Некорректный YAML стартового конфига или неизвестные параметры":
+    "Invalid startup YAML or unknown parameters",
+  "В конфиге должен быть один YAML-документ":
+    "Configuration must contain one YAML document",
+  "Адрес прослушивания: укажите IP:порт, например 0.0.0.0:8090":
+    "Listen address: enter IP:port, for example 0.0.0.0:8090",
+  "Порт должен быть числом от 1 до 65535":
+    "Port must be a number from 1 to 65535",
+  "Укажите каталог конфигурации Homepage":
+    "Enter the Homepage configuration directory",
+  "Путь содержит недопустимый символ": "Path contains an invalid character",
+  "Прокси: нужна ссылка http://, https://, socks5:// или socks5h:// с адресом сервера":
+    "Proxy requires an http://, https://, socks5://, or socks5h:// URL with a server address",
+  "Ожидался один JSON-объект": "Expected one JSON object",
+  "Конфиг изменён извне. Откройте настройки заново":
+    "Configuration was changed externally. Reopen settings",
+  "Некорректный YAML конфигурации": "Invalid configuration YAML",
+  "Стартовый конфиг должен быть объектом YAML":
+    "Startup configuration must be a YAML object",
+  "Неизвестный параметр конфигурации": "Unknown configuration parameter",
+  "Для этого параметра нужно текстовое значение":
+    "This parameter requires a text value",
+  "Параметры должны быть текстовыми": "Parameters must be text values",
+  "Не удалось сформировать YAML": "Could not generate YAML",
+  "Не удалось сохранить резервную копию: ": "Could not save backup: ",
+  Настройки: "Settings",
+  "Настройте внешний вид и поведение главной страницы.":
+    "Customize the appearance and behavior of your homepage.",
+  Сервисы: "Services",
+  "Приложения, группы и виджеты ваших сервисов в одном месте.":
+    "Applications, groups, and service widgets in one place.",
+  Закладки: "Bookmarks",
+  "Соберите полезные ссылки и распределите их по группам.":
+    "Collect useful links and organize them into groups.",
+  Инфовиджеты: "Info widgets",
+  "Поиск, часы, погода и информация о вашей системе.":
+    "Search, clock, weather, and system information.",
+  "Подключения для обнаружения контейнеров и их статуса.":
+    "Connections for discovering containers and their status.",
+  "Обнаружение сервисов и настройки подключения к кластеру.":
+    "Service discovery and cluster connection settings.",
+  "Подключения к узлам виртуализации Proxmox.":
+    "Connections to Proxmox virtualization nodes.",
+  "Стили CSS": "CSS styles",
+  "Добавьте собственные стили для вашего Homepage.":
+    "Add custom styles to your Homepage.",
+  "Скрипты JS": "JS scripts",
+  "Собственный JavaScript, который выполняется в Homepage.":
+    "Custom JavaScript that runs in Homepage.",
+  "Название страницы": "Page title",
+  "Отображается во вкладке браузера": "Shown in the browser tab",
+  Описание: "Description",
+  "Описание вашей главной страницы": "Description of your homepage",
+  "Тема оформления": "Theme",
+  "Светлый или тёмный интерфейс Homepage": "Light or dark Homepage interface",
+  "Цветовая палитра": "Color palette",
+  "Основной цвет элементов интерфейса": "Primary interface color",
+  "Язык интерфейса": "Interface language",
+  "Например: ru, en, de": "For example: ru, en, de",
+  "Стиль заголовка": "Header style",
+  "Оформление заголовков групп": "Appearance of group headings",
+  "Расположение групп": "Group layout",
+  "Столбцы, вкладки, иконки и порядок групп":
+    "Columns, tabs, icons, and group order",
+  "Фон страницы": "Page background",
+  "URL изображения или объект с фильтрами":
+    "Image URL or an object with filters",
+  "Размытие карточек": "Card blur",
+  "Обводка карточек": "Card outline",
+  "Тень или тонкая рамка": "Shadow or thin border",
+  "Оформление показателей": "Statistics style",
+  "Стиль чисел и подписей внутри виджетов":
+    "Appearance of numbers and labels inside widgets",
+  "Шрифт страницы": "Page font",
+  "Основной шрифт или моноширинное оформление": "Default or monospace font",
+  "Название группы": "Group title",
+  "Показывать заголовок этой группы": "Show this group's heading",
+  "Сворачивать при открытии": "Initially collapsed",
+  "Начальное состояние группы на странице": "Initial group state on the page",
+  Вкладка: "Tab",
+  "На какой вкладке показывать группу": "Tab on which to display the group",
+  "Иконка страницы": "Page icon",
+  "URL или путь к favicon": "Favicon URL or path",
+  "Открывать ссылки": "Open links",
+  "Где открывать страницу при нажатии на ссылку":
+    "Where to open a link when clicked",
+  "Стартовый адрес": "Start URL",
+  "Стартовый URL для PWA": "PWA start URL",
+  "Базовый URL": "Base URL",
+  "Базовый URL вашего Homepage": "Base URL of your Homepage",
+  "На всю ширину": "Full width",
+  "Использовать доступную ширину страницы": "Use the available page width",
+  "Максимум колонок": "Maximum columns",
+  "Число колонок для групп": "Number of columns for groups",
+  "Одинаковая высота карточек": "Equal card heights",
+  "Выравнивать высоту карточек сервисов": "Align service card heights",
+  "Скрыть версию": "Hide version",
+  "Не показывать версию Homepage": "Hide the Homepage version",
+  "Отключить проверку обновлений": "Disable update checks",
+  "Не проверять доступность новых версий": "Do not check for new versions",
+  "Статистика контейнеров": "Container statistics",
+  "Показывать статистику Docker": "Show Docker statistics",
+  "Стиль статуса": "Status style",
+  "Как показывать доступность сервиса": "How to display service availability",
+  "Скрыть ошибки виджетов": "Hide widget errors",
+  "Скрывать сообщения об ошибках в виджетах": "Hide error messages in widgets",
+  "Запретить индексацию": "Prevent indexing",
+  "Попросить поисковые системы не индексировать страницу":
+    "Ask search engines not to index the page",
+  "Имя экземпляра": "Instance name",
+  "Различать несколько экземпляров Homepage":
+    "Distinguish multiple Homepage instances",
+  "Быстрый поиск": "Quick search",
+  "Настройки быстрого запуска": "Quick launch settings",
+  Провайдеры: "Providers",
+  "Общие ключи API для виджетов": "Shared API keys for widgets",
+  "Каталог логов": "Log directory",
+  "Путь логов в процессе Homepage": "Log path inside the Homepage process",
+  "Адрес ссылки": "Link URL",
+  "URL приложения или закладки": "Application or bookmark URL",
+  Иконка: "Icon",
+  "Например: jellyfin.png или mdi-server":
+    "For example: jellyfin.png or mdi-server",
+  "Виджет сервиса": "Service widget",
+  "Тип, адрес, ключ API и параметры интеграции":
+    "Type, URL, API key, and integration settings",
+  "Виджеты сервиса": "Service widgets",
+  "Несколько виджетов в одной карточке": "Multiple widgets in one card",
+  Сервер: "Server",
+  "Имя подключения из docker.yaml": "Connection name from docker.yaml",
+  Контейнер: "Container",
+  "Имя Docker-контейнера": "Docker container name",
+  "Проверка доступности": "Availability check",
+  "Адрес для проверки доступности": "Address to check for availability",
+  "HTTP-мониторинг": "HTTP monitoring",
+  "URL для проверки статуса": "URL for checking status",
+  "Тип виджета": "Widget type",
+  "Идентификатор интеграции Homepage": "Homepage integration identifier",
+  "Адрес подключения": "Connection URL",
+  "URL вашего сервиса": "Your service URL",
+  "Ключ API": "API key",
+  "Поддерживаются {{HOMEPAGE_VAR_…}}": "Supports {{HOMEPAGE_VAR_…}}",
+  "Пользователь / ID токена": "Username / token ID",
+  "Учётная запись или идентификатор API-токена сервиса":
+    "Service account or API token identifier",
+  "Пароль / секрет токена": "Password / token secret",
+  "Секрет для подключения к сервису": "Secret for connecting to the service",
+  Узел: "Node",
+  "Имя узла, например pve-1": "Node name, for example pve-1",
+  "Версия API": "API version",
+  "Версия API, поддерживаемая вашим сервисом":
+    "API version supported by your service",
+  "Блоки статистики": "Statistics blocks",
+  "Показывать блоки статистики виджета": "Show widget statistics blocks",
+  "Сейчас воспроизводится": "Now playing",
+  "Показывать текущие медиасеансы": "Show current media sessions",
+  "Путь сокета внутри контейнера Homepage":
+    "Socket path inside the Homepage container",
+  "Показываемые показатели": "Displayed metrics",
+  "Список показателей виджета и порядок их отображения":
+    "Widget metrics and their display order",
+  "Заголовки API": "API headers",
+  "Дополнительные HTTP-заголовки для запросов к сервису":
+    "Additional HTTP headers for service requests",
+  Хост: "Host",
+  "Адрес сервера": "Server address",
+  Порт: "Port",
+  "Порт подключения": "Connection port",
+  "Режим подключения": "Connection mode",
+  "default или disabled": "default or disabled",
+  Сокращение: "Abbreviation",
+  "Короткая подпись вместо иконки": "Short label instead of an icon",
+  Расположение: "Layout",
+  "row или column": "row or column",
+  Колонки: "Columns",
+  "Количество колонок группы": "Number of group columns",
+  Изображение: "Image",
+  "Адрес или локальный путь к изображению": "Image URL or local path",
+  "Размытие фона": "Background blur",
+  "Степень размытия фонового изображения": "Background image blur intensity",
+  "Яркость фона": "Background brightness",
+  "100 — исходная яркость; меньше — темнее":
+    "100 is the original brightness; lower is darker",
+  "Насыщенность фона": "Background saturation",
+  "100 — исходная насыщенность цветов": "100 is the original color saturation",
+  "Непрозрачность фона": "Background opacity",
+  "От 0 — прозрачный до 100 — непрозрачный":
+    "From 0 (transparent) to 100 (opaque)",
+  "Базовое оформление": "Basic appearance",
+  "Тема, палитра, язык и заголовок": "Theme, palette, language, and title",
+  "Макет групп": "Group layout template",
+  "Группы в три колонки": "Groups in three columns",
+  "Группа сервисов": "Service group",
+  "Группа с примером приложения": "Group with a sample application",
+  "Медиасервер с виджетом": "Media server with a widget",
+  "Docker-сервис": "Docker service",
+  "Карточка со статусом контейнера": "Card with container status",
+  "Группа закладок": "Bookmark group",
+  "Ссылки с иконками и сокращениями": "Links with icons and abbreviations",
+  Поиск: "Search",
+  "Поиск через DuckDuckGo": "Search with DuckDuckGo",
+  "Дата и время": "Date and time",
+  "Часы в формате 24 часа": "24-hour clock",
+  Ресурсы: "Resources",
+  "CPU, память и диск процесса Homepage":
+    "CPU, memory, and disk of the Homepage process",
+  Приветствие: "Greeting",
+  "Текст в верхней части страницы": "Text at the top of the page",
+  "Погода без ключа API": "Weather without an API key",
+  "Локальный Docker socket": "Local Docker socket",
+  "Подключение к Docker socket proxy": "Connect to a Docker socket proxy",
+  "Обнаружение сервисов": "Service discovery",
+  "Использовать конфигурацию кластера": "Use cluster configuration",
+  Отключить: "Disable",
+  "Отключить интеграцию с кластером": "Disable cluster integration",
+  "Узел Proxmox": "Proxmox node",
+  "URL и API-токен": "URL and API token",
+  "Дополнительный файл конфигурации Homepage.":
+    "Additional Homepage configuration file.",
+  "Необходима авторизация. Обновите страницу.":
+    "Authentication required. Reload the page.",
+  "Сервер вернул неожиданный ответ (":
+    "The server returned an unexpected response (",
+  "Ошибка запроса": "Request failed",
+  "Будут сохранены settings.yaml и custom.css":
+    "settings.yaml and custom.css will be saved",
+  "Сохраняется только текущий файл": "Only the current file will be saved",
+  "Есть несохранённые изменения": "Unsaved changes",
+  "Нет несохранённых изменений": "No unsaved changes",
+  "Есть несохранённые изменения. Перейти к другому файлу и потерять их?":
+    "You have unsaved changes. Switch to another file and discard them?",
+  "</> Код": "</> Code",
+  "Ошибка YAML": "YAML error",
+  "Файл подключён": "File connected",
+  "Новая конфигурация": "New configuration",
+  "Исправьте исходный код": "Fix the source code",
+  "Готов к редактированию": "Ready to edit",
+  "Будет создан при сохранении": "Will be created when saved",
+  "＋ Добавить группу": "＋ Add group",
+  "＋ Добавить виджет": "＋ Add widget",
+  "＋ Добавить настройку": "＋ Add setting",
+  "＋ Добавить параметр": "＋ Add parameter",
+  "Блок перемещён. Сохраните изменения, чтобы применить порядок.":
+    "Block moved. Save changes to apply the order.",
+  "Переместить блок": "Move block",
+  "Выберите группу для «": "Choose a group for “",
+  "». Блок будет добавлен в конец выбранной группы.":
+    "”. The block will be added to the end of the selected group.",
+  Группа: "Group",
+  Отмена: "Cancel",
+  Переместить: "Move",
+  "Перетащить блок «": "Drag block “",
+  выше: "up",
+  ниже: "down",
+  "Переместить «": "Move “",
+  "» в другую группу": "” to another group",
+  "Перетащите блок в группу «": "Drop the block into group “",
+  "Пока здесь пусто": "Nothing here yet",
+  "Начните с удобного шаблона": "Start with a template",
+  "Добавьте настройки вручную или выберите шаблон. Файл появится на диске после сохранения.":
+    "Add settings manually or choose a template. The file will be created when saved.",
+  "Выбрать шаблон": "Choose template",
+  "Добавить вручную": "Add manually",
+  "Тяните блоки за ⠿ или используйте ↑ / ↓. Кнопка ↗ переносит сервис или закладку в другую группу. Порядок записывается после сохранения.":
+    "Drag blocks by ⠿ or use ↑ / ↓. The ↗ button moves a service or bookmark to another group. Save to apply the order.",
+  "Новый сервис": "New service",
+  "Название и адрес приложения": "Application name and URL",
+  "Сервис из каталога": "Service from catalog",
+  "Карточка приложения с готовой интеграцией":
+    "Application card with a ready-made integration",
+  "Параметр сервиса": "Service parameter",
+  "Параметр виджета": "Widget parameter",
+  "Иконка, описание, мониторинг и другие свойства":
+    "Icon, description, monitoring, and other properties",
+  "Настройки выбранной интеграции": "Settings for the selected integration",
+  "Добавить ещё один виджет": "Add another widget",
+  "Подключить виджет": "Connect widget",
+  "Выбрать интеграцию из каталога": "Choose an integration from the catalog",
+  "Добавить в группу": "Add to group",
+  "Добавить в сервис": "Add to service",
+  "Настроить виджет": "Configure widget",
+  "Действие относится только к выбранному блоку.":
+    "This action applies only to the selected block.",
+  "Описание сервиса": "Service description",
+  "Добавить параметр": "Add parameter",
+  "Выберите готовую настройку. Подходящее поле ввода и начальное значение добавятся автоматически.":
+    "Choose a setting. The appropriate input and initial value will be added automatically.",
+  "Найти настройку": "Find setting",
+  "Уже добавлено": "Already added",
+  "Раздел настроек": "Settings section",
+  "Список значений": "Value list",
+  Переключатель: "Toggle",
+  "Числовое поле": "Number input",
+  "Текстовое поле": "Text input",
+  "Своё поле…": "Custom field…",
+  "Добавить сервис": "Add service",
+  "Добавить группу": "Add group",
+  "Название и адрес приложения. Виджет и остальные настройки можно добавить в его карточке.":
+    "Application name and URL. You can add a widget and other settings in its card.",
+  "Группа объединяет сервисы на главной странице.":
+    "A group organizes services on the homepage.",
+  Название: "Name",
+  "Адрес приложения": "Application URL",
+  Добавить: "Add",
+  "Укажите уникальное название": "Enter a unique name",
+  "В сервисе неоднозначные настройки виджетов. Выберите явную замену или исправьте их в YAML.":
+    "The service has ambiguous widget settings. Choose explicit replacement or fix them in YAML.",
+  "Большая глубина вложенности — используйте YAML-режим.":
+    "Nesting is too deep — use YAML mode.",
+  "Элемент ": "Item ",
+  "＋ Параметр из шаблона": "＋ Parameter from template",
+  "＋ Добавить своё поле": "＋ Add custom field",
+  "＋ Добавить элемент": "＋ Add item",
+  "Встроенный Alertmanager Grafana": "Built-in Grafana Alertmanager",
+  "Внешний источник с UID alertmanager":
+    "External data source with UID alertmanager",
+  "Grafana новее 10.4": "Grafana newer than 10.4",
+  "Grafana 10.4 и старше": "Grafana 10.4 and earlier",
+  "В новой вкладке": "In a new tab",
+  "В текущей вкладке": "In the current tab",
+  "В основном окне": "In the top-level window",
+  Тёмная: "Dark",
+  Светлая: "Light",
+  "С подчёркиванием": "Underlined",
+  "В рамке": "Boxed",
+  Минималистичный: "Minimal",
+  "Виджеты в рамке": "Boxed widgets",
+  "Цветная точка": "Colored dot",
+  "Текстовый статус": "Text status",
+  Русский: "Russian",
+  "Серо-синий": "Slate",
+  Серый: "Gray",
+  Цинковый: "Zinc",
+  Нейтральный: "Neutral",
+  Каменный: "Stone",
+  Красный: "Red",
+  Оранжевый: "Orange",
+  Янтарный: "Amber",
+  Жёлтый: "Yellow",
+  Лаймовый: "Lime",
+  Зелёный: "Green",
+  Изумрудный: "Emerald",
+  Бирюзовый: "Teal",
+  Голубой: "Cyan",
+  Небесный: "Sky",
+  Синий: "Blue",
+  Индиго: "Indigo",
+  Фиолетовый: "Violet",
+  Пурпурный: "Purple",
+  Фуксия: "Fuchsia",
+  Розовый: "Pink",
+  "Розовый коралл": "Rose",
+  "Дополнительные настройки поля": "Advanced field settings",
+  ". Обычно способ ввода определяется автоматически.":
+    ". The input type is usually detected automatically.",
+  "Как задавать значение": "Value type",
+  "Текст или адрес": "Text or URL",
+  "Переключатель: включено / выключено": "Toggle: on / off",
+  "Число без дробной части": "Integer",
+  "Число с дробной частью": "Decimal number",
+  "Не задавать значение (по умолчанию)": "Leave unset (default)",
+  Применить: "Apply",
+  "Копия добавлена в черновик. Сохраните изменения.":
+    "Copy added to the draft. Save your changes.",
+  " (копия)": " (copy)",
+  " (копия ": " (copy ",
+  "Копировать блок": "Duplicate block",
+  "Укажите новое имя группы или параметра. Все вложенные настройки будут скопированы.":
+    "Enter a new group or parameter name. All nested settings will be copied.",
+  "Название копии": "Copy name",
+  "Создать копию": "Create copy",
+  "Удалить «": "Delete “",
+  полей: "fields",
+  элементов: "items",
+  "Создать копию «": "Duplicate “",
+  Сервис: "Service",
+  Виджет: "Widget",
+  Виджеты: "Widgets",
+  "Добавить сервис в эту группу": "Add a service to this group",
+  "Добавить виджет в этот сервис": "Add a widget to this service",
+  "Настроить этот виджет": "Configure this widget",
+  "Добавить параметры сервиса": "Add service parameters",
+  "Пользователь Grafana": "Grafana username",
+  "Логин пользователя с правами серверного администратора. Это не имя service account.":
+    "User login with server administrator permissions. This is not a service account name.",
+  "Пароль пользователя Grafana": "Grafana password",
+  "Для /api/admin/stats нужен пароль пользователя; токен service account не поддерживается.":
+    "/api/admin/stats requires a user's password; service account tokens are not supported.",
+  "Источник оповещений": "Alert source",
+  "Обычно встроенный Grafana. Внешний источник выбирайте только если он настроен.":
+    "Usually built-in Grafana. Choose an external source only if it is configured.",
+  "Совместимость виджета": "Widget compatibility",
+  "Версия 2 — для Grafana новее 10.4, включая 12.x.":
+    "Version 2 is for Grafana newer than 10.4, including 12.x.",
+  "Адрес Grafana": "Grafana URL",
+  "Полный адрес с http:// или https://, например http://192.168.2.2:3000":
+    "Full URL with http:// or https://, for example http://192.168.2.2:3000",
+  "Параметр конфигурации": "Configuration parameter",
+  "Ссылка на YAML-якорь: *": "YAML anchor reference: *",
+  " · редактируется в YAML": " · edit in YAML",
+  "Другое: ": "Other: ",
+  "По умолчанию": "Default",
+  Включено: "Enabled",
+  Выключено: "Disabled",
+  Задать: "Set",
+  "Дополнительные настройки: ": "Advanced settings: ",
+  "Выбрать иконку: ссылка, файл или сторонняя база":
+    "Choose an icon: URL, file, or gallery",
+  "Добавить элемент": "Add item",
+  "Любые поля Homepage доступны через вложенные объекты и списки.":
+    "All Homepage fields are available through nested objects and lists.",
+  "Имя параметра": "Parameter name",
+  "Выберите известный параметр или введите своё имя.":
+    "Choose a known parameter or enter a custom name.",
+  "Имя поля в конфигурации Homepage":
+    "Field name in the Homepage configuration",
+  "Например: title": "For example: title",
+  "Определить автоматически": "Detect automatically",
+  "Раздел с вложенными настройками": "Section with nested settings",
+  "Список элементов": "Item list",
+  "Целое число": "Integer number",
+  Число: "Number",
+  "Дополнительные настройки": "Advanced settings",
+  Значение: "Value",
+  "Для объекта и списка поля можно добавить после создания.":
+    "For objects and lists, fields can be added after creation.",
+  "Значение параметра": "Parameter value",
+  "Укажите уникальное имя параметра": "Enter a unique parameter name",
+  "Введите корректное число": "Enter a valid number",
+  Переименовать: "Rename",
+  "Название группы или параметра в конфигурации.":
+    "Group or parameter name in the configuration.",
+  "Добавить из шаблона": "Add from template",
+  "Шаблон — отправная точка. Измените адреса и ключи перед сохранением.":
+    "A template is a starting point. Update URLs and keys before saving.",
+  "Уже есть поля: ": "Existing fields: ",
+  "Весь каталог Homepage →": "Full Homepage catalog →",
+  "Пустой объект / своё поле": "Empty object / custom field",
+  "Каталог Homepage": "Homepage catalog",
+  " примеров из официальной документации · снимок ":
+    " examples from the official documentation · snapshot ",
+  ". Параметры можно изменить после добавления.":
+    ". You can edit the parameters after adding them.",
+  "Что сделать": "Action",
+  "Добавить ещё один виджет, сохранив текущий":
+    "Add another widget, keeping the current one",
+  "Заменить существующие виджеты": "Replace existing widgets",
+  "Выберите интеграцию для текущего сервиса. Её параметры появятся внутри карточки; адрес, иконка и мониторинг сохранятся.":
+    "Choose an integration for the current service. Its settings will appear inside the card; URL, icon, and monitoring will be preserved.",
+  "Сервис будет добавлен в выбранную группу. Укажите название и выберите интеграцию.":
+    "The service will be added to the selected group. Enter a name and choose an integration.",
+  "Название сервиса": "Service name",
+  "Оставьте пустым, чтобы использовать название интеграции.":
+    "Leave empty to use the integration name.",
+  "Название интеграции": "Integration name",
+  "Найти интеграцию или параметр": "Find integration or parameter",
+  "В этом шаблоне нет настроек виджета": "This template has no widget settings",
+  "Виджет добавлен в сервис. Укажите адрес и ключи, затем сохраните изменения.":
+    "Widget added to the service. Enter its URL and keys, then save your changes.",
+  "Укажите название группы": "Enter a group name",
+  "В этой группе уже есть сервис с таким названием":
+    "A service with this name already exists in this group",
+  "Поле ": "Field ",
+  " уже существует. Измените его в редакторе.":
+    " already exists. Change it in the editor.",
+  "Шаблон добавлен. Укажите адреса и ключи своего сервиса.":
+    "Template added. Enter your service URLs and keys.",
+  "Документация ↗": "Documentation ↗",
+  "Укажите полный URL с http:// или https:// в поле «":
+    "Enter a full URL with http:// or https:// in the field “",
+  "Укажите корректное число в поле «": "Enter a valid number in the field “",
+  "Сохранено. Обновите страницу Homepage, чтобы увидеть изменения.":
+    "Saved. Refresh Homepage to see the changes.",
+  "Изменения перед сохранением": "Review changes",
+  " · данные на диске и текущая версия": " · on-disk data and current version",
+  "На диске": "On disk",
+  "После сохранения": "After saving",
+  "Изменения оформления · custom.css": "Appearance changes · custom.css",
+  "Продолжить редактирование": "Continue editing",
+  "Сохранить изменения": "Save changes",
+  "История изменений": "Change history",
+  "Предыдущие версии ": "Previous versions of ",
+  ". Восстановление сначала загружает копию в редактор.":
+    ". Restoring first loads a copy into the editor.",
+  "Пока нет резервных копий. Они появятся после изменения существующего файла.":
+    "No backups yet. They will appear after an existing file is changed.",
+  " байт": " bytes",
+  "Загрузить в редактор": "Load into editor",
+  "Заменить несохранённые изменения резервной копией?":
+    "Replace unsaved changes with the backup?",
+  "Копия в редакторе. Проверьте и сохраните для восстановления.":
+    "Backup loaded into the editor. Review and save to restore it.",
+  "Отменить изменения и загрузить файл с диска?":
+    "Discard changes and reload the file from disk?",
+  "Конфигурация скачана": "Configuration downloaded",
+  "Дополнительный YAML": "Additional YAML",
+  "Создайте файл для подключаемой конфигурации. Homepage должен быть настроен на его использование отдельно.":
+    "Create a file for an additional configuration. Homepage must be configured separately to use it.",
+  "Имя файла": "File name",
+  "Открыть файл": "Open file",
+  "Введите имя файла с расширением .yaml или .yml":
+    "Enter a file name ending in .yaml or .yml",
+  "В шаблоне нужна подстановка {name}.":
+    "The template needs a {name} placeholder.",
+  "Введите название логотипа.": "Enter a logo name.",
+  "Нужна HTTP/HTTPS-ссылка без логина и пароля.":
+    "An HTTP/HTTPS URL without a username or password is required.",
+  "Поддерживается только подстановка {name}.":
+    "Only the {name} placeholder is supported.",
+  "Найти загруженную иконку": "Find uploaded icon",
+  "Загрузка…": "Loading…",
+  "Показать ещё": "Show more",
+  "Обновить список": "Refresh list",
+  "Показано {0} из {1}. Выберите иконку и нажмите «Применить иконку».":
+    "Showing {0} of {1}. Select an icon and click “Apply icon”.",
+  "В каталоге пока нет иконок. Загрузите их из галереи, по ссылке или с компьютера. Поддерживаются PNG, JPEG, WebP и GIF.":
+    "No icons in this directory yet. Upload them from a gallery, URL, or your computer. PNG, JPEG, WebP, and GIF are supported.",
+  "Не удалось прочитать иконки: ": "Could not read icons: ",
+  "Каталог иконок": "Icon catalog",
+  "Имя или шаблон": "Name or pattern",
+  "grafana — содержит слово; grafana* — начинается с него; *grafana* — содержит; ? — один символ. Скачиваются все совпадения, включая ещё не показанные карточки.":
+    "grafana matches the word; grafana* matches a prefix; *grafana* matches anywhere; ? matches one character. All matches are downloaded, including cards not yet displayed.",
+  "Загрузка списка иконок…": "Loading icon list…",
+  "Остановить загрузку": "Stop download",
+  "Скачать найденные": "Download matches",
+  "Загрузка {0} из {1}: {2}": "Downloading {0} of {1}: {2}",
+  "{0} Сохранено: {1}; ошибок: {2}; всего совпадений: {3}. Конфигурация сервисов не изменялась.":
+    "{0} Saved: {1}; errors: {2}; total matches: {3}. Service configuration was not changed.",
+  "Применить SVG по ссылке: ": "Apply SVG URL: ",
+  "Выбрать и загрузить: ": "Select and download: ",
+  "Показано {0} из {1}. ": "Showing {0} of {1}. ",
+  "SVG применяется как внешняя ссылка. Локальная конвертация и массовое скачивание SVG пока недоступны.":
+    "SVG is applied as an external URL. Local SVG conversion and bulk download are not yet available.",
+  "Нажмите на иконку для загрузки на сервер.":
+    "Click an icon to download it to the server.",
+  "Скачать найденные ({0})": "Download matches ({0})",
+  "Источник и лицензия: ": "Source and license: ",
+  "Своя база": "Custom source",
+  "Массовая загрузка сохраняет PNG 256 × 256 в каталог иконок на сервере. Пути появятся ниже; сервисы не меняются. Для своей базы нужен список имён.":
+    "Bulk download saves 256 × 256 PNG files to the server's icon directory. Paths will appear below; services are not changed. A custom source requires a list of names.",
+  "SVG-ссылка": "SVG URL",
+  "загрузка PNG": "PNG download",
+  "Не удалось открыть каталог: ": "Could not open catalog: ",
+  "Текущее поле icon": "Current icon field",
+  "Сначала добавьте сервис или закладку, для которых нужна иконка.":
+    "First add a service or bookmark that needs an icon.",
+  "Загрузить иконку": "Upload icon",
+  "Загрузить фон по ссылке": "Download background from URL",
+  "Изображение будет сохранено локально. Применение добавит путь в черновик — затем сохраните изменения.":
+    "The image will be saved locally. Applying it adds the path to the draft — then save your changes.",
+  "Сервис или закладка": "Service or bookmark",
+  Источник: "Source",
+  "По ссылке": "From URL",
+  "Галерея иконок — выбрать и загрузить": "Icon gallery — select and download",
+  "Загруженные иконки": "Uploaded icons",
+  "Файл с компьютера": "File from computer",
+  "Ссылка на изображение": "Image URL",
+  "Публичная HTTP/HTTPS-ссылка на JPEG, PNG, GIF или WebP; до 20 MiB и 16 Мп.":
+    "Public HTTP/HTTPS URL to JPEG, PNG, GIF, or WebP; up to 20 MiB and 16 MP.",
+  "Файл изображения": "Image file",
+  "JPEG, PNG, GIF или WebP; до 20 MiB. SVG, ICO и AVIF пока не поддерживаются.":
+    "JPEG, PNG, GIF, or WebP; up to 20 MiB. SVG, ICO, and AVIF are not yet supported.",
+  "Формат результата": "Output format",
+  "WebP — без потерь": "WebP — lossless",
+  "JPEG — для фотографий": "JPEG — for photos",
+  "PNG — без потерь, с прозрачностью": "PNG — lossless, with transparency",
+  "Качество JPEG (1–100)": "JPEG quality (1–100)",
+  "Максимальная ширина, px": "Maximum width, px",
+  "Максимальная высота, px": "Maximum height, px",
+  "Пропорции сохраняются, маленькие изображения не увеличиваются. 0 — без ограничения. GIF превращается в статичный первый кадр; SVG и AVIF не поддерживаются.":
+    "Aspect ratio is preserved; small images are not enlarged. 0 means unlimited. GIF uses its first frame; SVG and AVIF are not supported.",
+  "Каталог: ": "Directory: ",
+  ". Этот каталог должен быть доступен Homepage как public/":
+    ". This directory must be available to Homepage as public/",
+  "). В Docker смонтируйте его в /app/public/":
+    "). In Docker, mount it at /app/public/",
+  ". После добавления нового файла может потребоваться перезапуск Homepage.":
+    ". You may need to restart Homepage after adding a new file.",
+  "Применить иконку": "Apply icon",
+  "Применить фон": "Apply background",
+  "Фон использует YAML-якорь или неподдерживаемый тип. Измените background вручную на ":
+    "The background uses a YAML anchor or an unsupported type. Change background manually to ",
+  "Иконка добавлена": "Icon added",
+  "Фон добавлен": "Background added",
+  " в черновик. Нажмите «Сохранить изменения».":
+    " to the draft. Click “Save changes”.",
+  "Загрузить и конвертировать": "Download and convert",
+  "Проверьте источник (ссылка или файл до 20 MiB), качество и размеры изображения.":
+    "Check the source (URL or file up to 20 MiB), quality, and image dimensions.",
+  "Загрузка и конвертация…": "Downloading and converting…",
+  "Предпросмотр загруженной иконки": "Uploaded icon preview",
+  "Предпросмотр загруженного фона": "Uploaded background preview",
+  "Выбранная SVG-иконка": "Selected SVG icon",
+  "Не удалось загрузить SVG. Проверьте доступ к базе иконок.":
+    "Could not load SVG. Check access to the icon source.",
+  "В конфигурацию будет добавлена внешняя SVG-ссылка. Для отображения нужен доступ к CDN.":
+    "An external SVG URL will be added to the configuration. CDN access is required to display it.",
+  "Выберите уже сохранённую иконку. Скачивать и конвертировать её повторно не нужно.":
+    "Choose an existing icon. No download or conversion is needed.",
+  "Выберите набор и иконку. PNG скачивается на сервер, SVG применяется как внешняя ссылка.":
+    "Choose a set and an icon. PNG is downloaded to the server; SVG is applied as an external URL.",
+  Закрыть: "Close",
+  "Путь скопирован": "Path copied",
+  "Не удалось скопировать путь: ": "Could not copy path: ",
+  "Каталог шаблонов недоступен. Редактирование файлов работает.":
+    "Template catalog unavailable. File editing still works.",
+  "Нет подключения": "Not connected",
+  "Проверьте сервер": "Check the server",
+  "Раскладка использует YAML-ссылку или другой тип. Сначала задайте layout как раздел настроек.":
+    "Layout uses a YAML reference or another type. First set layout to a settings section.",
+  "Параметры группы «": "Settings for group “",
+  "» должны быть разделом настроек.": "” must be a settings section.",
+  "Оформление и раскладка": "Appearance and layout",
+  "Настройте свою страницу. Предпросмотр показывает компоновку без запросов к API сервисов. Применение изменит черновик; запись произойдёт после сохранения.":
+    "Customize your page. The preview shows the layout without calling service APIs. Applying changes updates the draft; save to write them to disk.",
+  "Схема страницы · масштаб и данные виджетов приблизительные":
+    "Page preview · scale and widget data are approximate",
+  "Текущее: ": "Current: ",
+  Страница: "Page",
+  Тема: "Theme",
+  Системная: "System",
+  Палитра: "Palette",
+  Шрифт: "Font",
+  "Manrope — стандартный": "Manrope — default",
+  Моноширинный: "Monospace",
+  "Моноширинные показатели": "Monospace metrics",
+  "Страница на всю ширину": "Full-width page",
+  "Скрыть версию Homepage": "Hide Homepage version",
+  "Вертикальных групп в строке": "Vertical groups per row",
+  "Для групп со способом расположения «Вертикальный столбец».":
+    "For groups using the “Vertical column” layout.",
+  "Фон и эффекты": "Background and effects",
+  "Фоновое изображение": "Background image",
+  "URL или путь из Homepage. Загрузить и конвертировать изображение можно кнопкой «Загрузить фон» в Настройках.":
+    "URL or path in Homepage. Use “Upload background” in Settings to download and convert an image.",
+  "Фон использует YAML-ссылку. Сначала задайте изображение в обычном редакторе.":
+    "The background uses a YAML reference. First set the image in the regular editor.",
+  "Показать удалённое изображение в предпросмотре":
+    "Show remote image in preview",
+  "Загружается только фон, указанный вами. Иконки внешних сервисов не запрашиваются.":
+    "Only the background you specify is loaded. External service icons are not requested.",
+  "Где применять эффект": "Effect target",
+  "Фильтры фонового изображения": "Background image filters",
+  "Размытие под карточками": "Blur behind cards",
+  "Homepage не совмещает фильтры фона с размытием карточек. При применении останется выбранный режим.":
+    "Homepage cannot combine background filters with card blur. Only the selected mode will be kept when applied.",
+  "Без размытия": "No blur",
+  "Очень слабое": "Very subtle",
+  Слабое: "Subtle",
+  Стандартное: "Standard",
+  Среднее: "Medium",
+  Сильное: "Strong",
+  "Очень сильное": "Very strong",
+  Максимальное: "Maximum",
+  "Непрозрачность фона, %": "Background opacity, %",
+  Карточки: "Cards",
+  Обводка: "Outline",
+  "Тень — стандартная": "Shadow — default",
+  "Тонкая рамка": "Thin border",
+  "Показатели виджетов": "Widget metrics",
+  Стандартные: "Default metrics",
+  "Выразительные числа": "Bold numbers",
+  "Статус сервиса": "Service status",
+  "Своя прозрачность и размеры карточек": "Custom card opacity and dimensions",
+  "Эти параметры сохраняются в отдельный блок custom.css. Остальные стили сохраняются.":
+    "These settings are saved in a separate custom.css block. Other styles are preserved.",
+  "Непрозрачность карточек, %": "Card opacity, %",
+  "Скругление, px": "Corner radius, px",
+  "Внутренние отступы, px": "Padding, px",
+  "Расстояние между карточками, px": "Gap between cards, px",
+  "Группы и порядок": "Groups and order",
+  "Порядок хранится в layout. Широкая группа занимает строку целиком; внутри неё можно выбрать 1–8 колонок карточек. Вложенные группы настраиваются отдельно.":
+    "Order is stored in layout. A wide group spans a whole row with 1–8 card columns. Nested groups are configured separately.",
+  "Группа ": "Group ",
+  "На всю ширину строки": "Full row width",
+  "Вертикальный столбец": "Vertical column",
+  "Колонок карточек": "Card columns",
+  "Показывать название группы": "Show group title",
+  "Свернуть при открытии страницы": "Collapse on page load",
+  "Вкладка (необязательно)": "Tab (optional)",
+  "Сначала добавьте группы в разделах «Сервисы» или «Закладки».":
+    "First add groups in Services or Bookmarks.",
+  "Группа свёрнута": "Group collapsed",
+  "Интеграция: ": "Integration: ",
+  "Мониторинг подключён": "Monitoring connected",
+  "Пустая группа": "Empty group",
+  "Здесь появятся ваши группы и сервисы":
+    "Your groups and services will appear here",
+  "Применить к черновику": "Apply to draft",
+  "Число вертикальных групп должно быть от 1 до 8.":
+    "The number of vertical groups must be between 1 and 8.",
+  "Оформление добавлено в черновик. Нажмите «Сохранить изменения».":
+    "Appearance added to the draft. Click “Save changes”.",
+  "Настройки панели": "Panel settings",
+  "Тема и отображение Home Pager. Настройки сохраняются в этом браузере; конфигурация и оформление самого Homepage не меняются.":
+    "Home Pager theme and display settings. Preferences are saved in this browser; Homepage configuration and appearance are not changed.",
+  "Конфигурация сервера: пути, подключение и пароль →":
+    "Server configuration: paths, connection, and password →",
+  "Тема панели": "Panel theme",
+  "Как в системе": "Use system setting",
+  "Плотность интерфейса": "Interface density",
+  Обычная: "Comfortable",
+  Компактная: "Compact",
+  "Только названия — всё свёрнуто": "Titles only — collapse everything",
+  "Открыть группы, карточки оставить свёрнутыми":
+    "Expand groups, keep cards collapsed",
+  "Раскрывать все уровни": "Expand all levels",
+  "При открытии сервисов": "When opening services",
+  "При открытии закладок": "When opening bookmarks",
+  "Подсказки под названиями полей": "Hints below field names",
+  "Количество полей и элементов в заголовках":
+    "Field and item counts in headings",
+  "Технические имена параметров в заголовках":
+    "Technical parameter names in headings",
+  "Подписи «Группа», «Сервис», «Виджет»":
+    "“Group”, “Service”, and “Widget” labels",
+  "Автоматически раскрывать результаты поиска":
+    "Automatically expand search results",
+  "При запуске открывать последний раздел": "Open the last section on startup",
+  "Ручное раскрытие сохраняется во время редактирования. После перехода в раздел или перезагрузки используется выбранное начальное состояние.":
+    "Manual expansion is kept while editing. Opening a section or reloading uses the selected initial state.",
+  "Сохранить настройки": "Save settings",
+  "Браузер не разрешает сохранить настройки. Разрешите локальное хранилище и повторите.":
+    "The browser could not save preferences. Allow local storage and try again.",
+  "Настройки панели сохранены.": "Panel settings saved.",
+  "Конфигурация сервера Home Pager": "Home Pager server configuration",
+  "Параметры сохраняются в конфиг на сервере и применяются после перезапуска Home Pager. Файлы Homepage и изображения автоматически не переносятся.":
+    "Parameters are saved to the server configuration and take effect after restarting Home Pager. Homepage files and images are not moved automatically.",
+  "Файл: ": "File: ",
+  "Относительные пути считаются от: ": "Relative paths are resolved from: ",
+  "При запуске заданы CLI-параметры: ": "Startup CLI parameters: ",
+  ". Они имеют приоритет над конфигом; уберите соответствующие параметры из команды запуска, чтобы изменения вступили в силу.":
+    ". They override the configuration file; remove the corresponding startup parameters for changes to take effect.",
+  "Адрес прослушивания": "Listen address",
+  "Например: 127.0.0.1:8090 или 0.0.0.0:8090. Новый адрес действует после перезапуска.":
+    "For example: 127.0.0.1:8090 or 0.0.0.0:8090. The new address takes effect after restarting.",
+  "Каталог конфигурации Homepage": "Homepage configuration directory",
+  "Путь на сервере к settings.yaml, services.yaml и остальным файлам. Каталог должен быть доступен панели для записи.":
+    "Server path to settings.yaml, services.yaml, and other files. The panel needs write access to this directory.",
+  "Каталог загруженных иконок": "Uploaded icons directory",
+  "Путь на сервере. Пусто — icons внутри каталога конфигурации Homepage.":
+    "Server path. Empty uses icons inside the Homepage configuration directory.",
+  "URL-путь иконок в Homepage": "Icon URL path in Homepage",
+  "Например: /icons. Должен соответствовать монтированию или настройкам веб-сервера Homepage.":
+    "For example: /icons. Must match the Homepage mount or web server configuration.",
+  "Каталог загруженных фонов": "Uploaded backgrounds directory",
+  "Путь на сервере. Пусто — images внутри каталога конфигурации Homepage.":
+    "Server path. Empty uses images inside the Homepage configuration directory.",
+  "URL-путь фонов в Homepage": "Background URL path in Homepage",
+  "Например: /images. Смена пути не переписывает ссылки в сервисах и настройках Homepage.":
+    "For example: /images. Changing this does not rewrite links in Homepage services or settings.",
+  Авторизация: "Authentication",
+  "Пароль панели": "Panel password",
+  "Оставить текущий пароль": "Keep current password",
+  "Оставить текущую настройку — пароль не задан":
+    "Keep current setting — no password",
+  "Задать новый пароль": "Set new password",
+  "Отключить пароль": "Disable password",
+  "Текущий пароль не передаётся в браузер. Изменение действует после перезапуска.":
+    "The current password is not sent to the browser. Changes take effect after restarting.",
+  "Новый пароль": "New password",
+  "Прокси для скачивания изображений": "Image download proxy",
+  "HTTP-прокси": "HTTP proxy",
+  "HTTPS-прокси": "HTTPS proxy",
+  "Без прокси для адресов": "Bypass proxy for addresses",
+  ": режим": ": mode",
+  "Из окружения процесса": "From process environment",
+  "Не использовать": "Do not use",
+  "Указать значение": "Specify value",
+  "Адреса через запятую: localhost,127.0.0.1,.example.com":
+    "Comma-separated addresses: localhost,127.0.0.1,.example.com",
+  "Например: http://proxy.example.com:3128":
+    "For example: http://proxy.example.com:3128",
+  "Действующие параметры процесса": "Active process settings",
+  "Сохранить конфиг на сервере": "Save configuration to server",
+  "Введите новый пароль или выберите отключение пароля.":
+    "Enter a new password or choose to disable the password.",
+  "Конфиг сохранён. Для применения перезапустите Home Pager.":
+    "Configuration saved. Restart Home Pager to apply it.",
+  " Резервная копия: ": " Backup: ",
+  "Home Pager · Управление Homepage": "Home Pager · Homepage management",
+  Подключено: "Connected",
+  "Каталог конфигурации": "Configuration directory",
+  "Подключение…": "Connecting…",
+  КОНФИГУРАЦИЯ: "CONFIGURATION",
+  "＋ Дополнительный YAML": "＋ Additional YAML",
+  "⚙ Настройки панели": "⚙ Panel settings",
+  "Всё под вашим контролем": "Everything under your control",
+  "Изменения сохраняются в config": "Changes are saved to config",
+  "Рабочее пространство": "Workspace",
+  "ВАШ HOMEPAGE, В ВАШИХ РУКАХ": "YOUR HOMEPAGE, IN YOUR HANDS",
+  "Прямое подключение": "Direct connection",
+  "Работа с файлами конфигурации Homepage": "Edit Homepage configuration files",
+  "Копия файла перед каждым сохранением": "File backup before each save",
+  "Проверяем конфигурацию": "Checking configuration",
+  "▦ Визуальный редактор": "▦ Visual editor",
+  История: "History",
+  Скачать: "Download",
+  "◫ Оформление и раскладка": "◫ Appearance and layout",
+  "▧ Загрузить фон": "▧ Upload background",
+  "▧ Загрузить иконку": "▧ Upload icon",
+  "▦ Каталог Homepage": "▦ Homepage catalog",
+  "Комментарии и переменные Homepage поддерживаются":
+    "Comments and Homepage variables are supported",
+  "Ctrl / ⌘ + S — сохранить": "Ctrl / ⌘ + S — save",
+  "После сохранения обновите Homepage кнопкой ↻ на его странице.":
+    "After saving, refresh Homepage using ↻ on its page.",
+  Сбросить: "Reset",
+  "Посмотреть изменения": "Review changes",
+  "Независимая панель управления": "Independent management panel",
+  "Копировать полный путь": "Copy full path",
+  "Копировать полный путь к конфигурации": "Copy full configuration path",
+  "Файлы конфигурации": "Configuration files",
+  "Документация Homepage": "Homepage documentation",
+  "Открыть меню": "Open menu",
+  "Режим редактора": "Editor mode",
+  "Найти параметр…": "Find parameter…",
+  "Найти параметр": "Find parameter",
+  "Исходный код конфигурации": "Configuration source code",
+  "Загрузка остановлена.": "Download stopped.",
+  "Загрузка завершена.": "Download completed.",
+  "Язык панели": "Panel language",
+  "Язык изменится после сохранения настроек и перезагрузки страницы.":
+    "The language changes after saving settings and reloading the page.",
+  "Сначала сохраните или отмените изменения Homepage, затем смените язык панели.":
+    "Save or discard your Homepage changes before changing the panel language.",
+};

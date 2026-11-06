@@ -85,6 +85,11 @@ async function setup(
     this.open = false;
     this.dispatchEvent(new w.Event("close"));
   };
+  for (const script of ["translations.en.js", "i18n.js"]) {
+    new Script(readFileSync("web/" + script, "utf8")).runInContext(
+      dom.getInternalVMContext(),
+    );
+  }
   new Script(readFileSync("web/panel-settings.js", "utf8")).runInContext(
     dom.getInternalVMContext(),
   );
@@ -98,7 +103,10 @@ async function setup(
     dom.getInternalVMContext(),
   );
   await until(
-    () => w.document.getElementById("file-status").textContent !== "Загрузка…",
+    () =>
+      !["Загрузка…", "Loading…"].includes(
+        w.document.getElementById("file-status").textContent,
+      ),
     "initial document",
   );
   return dom;
@@ -1708,6 +1716,376 @@ test("server config GUI saves paths and password separately from Homepage and re
     assert.equal(d.getElementById("server-config-password").value, "");
   } finally {
     writeFileSync(metadata.path, beforeConfig);
+    dom.window.close();
+  }
+});
+
+test("panel language defaults to Russian, persists English, and protects unsaved drafts", async () => {
+  writeFileSync(join(dir, "settings.yaml"), "title: Моя страница\n");
+  const dom = await setup({ language: "invalid" }),
+    w = dom.window,
+    d = w.document;
+  let reloads = 0,
+    persisted;
+  w.reloadPanelLanguage = () => {
+    reloads++;
+  };
+  const chooseEnglish = () => {
+    const input = d.getElementById("panel-preference-language");
+    input.value = "en";
+    input.dispatchEvent(new w.Event("change"));
+  };
+  try {
+    assert.equal(d.documentElement.lang, "ru");
+    click(w, "#panel-settings-open");
+    assert.equal(d.getElementById("panel-preference-language").value, "ru");
+    chooseEnglish();
+    [...d.querySelectorAll("#dialog-actions button")]
+      .find((b) => b.textContent === "Отмена")
+      .click();
+    assert.equal(reloads, 0);
+    click(w, "#raw-tab");
+    await idle(w);
+    type(w, d.getElementById("raw"), "title: Несохранённая страница\n");
+    click(w, "#panel-settings-open");
+    chooseEnglish();
+    click(w, "#dialog-actions .primary");
+    assert.equal(reloads, 0);
+    assert.ok(d.getElementById("panel-language-error"));
+    assert.equal(
+      d.getElementById("raw").value,
+      "title: Несохранённая страница\n",
+    );
+    assert.equal(
+      JSON.parse(w.localStorage.getItem("home-pager.panel-preferences.v1"))
+        .language,
+      "invalid",
+    );
+    d.getElementById("dialog").close();
+    click(w, "#reload");
+    await idle(w);
+    click(w, "#panel-settings-open");
+    chooseEnglish();
+    click(w, "#dialog-actions .primary");
+    assert.equal(reloads, 1);
+    persisted = JSON.parse(
+      w.localStorage.getItem("home-pager.panel-preferences.v1"),
+    );
+    assert.equal(persisted.language, "en");
+    assert.equal(
+      readFileSync(join(dir, "settings.yaml"), "utf8"),
+      "title: Моя страница\n",
+    );
+  } finally {
+    w.close();
+  }
+  const english = await setup(persisted),
+    ew = english.window,
+    ed = ew.document;
+  try {
+    assert.equal(ed.documentElement.lang, "en");
+    assert.equal(ed.title, "Home Pager · Homepage management");
+    assert.equal(ed.getElementById("title").textContent, "Settings");
+    assert.equal(ed.getElementById("search").placeholder, "Find parameter…");
+    assert.equal(
+      ed.getElementById("dirty-label").textContent,
+      "No unsaved changes",
+    );
+    click(ew, "#panel-settings-open");
+    assert.equal(ed.getElementById("panel-preference-language").value, "en");
+    assert.ok(
+      ed.getElementById("dialog-body").textContent.includes("Panel language"),
+    );
+    let resetReloads = 0;
+    ew.reloadPanelLanguage = () => {
+      resetReloads++;
+    };
+    [...ed.querySelectorAll("#dialog-actions button")]
+      .find((b) => b.textContent === "Default")
+      .click();
+    assert.equal(ed.getElementById("panel-preference-language").value, "ru");
+    click(ew, "#dialog-actions .primary");
+    assert.equal(resetReloads, 1);
+    assert.equal(
+      JSON.parse(ew.localStorage.getItem("home-pager.panel-preferences.v1"))
+        .language,
+      "ru",
+    );
+  } finally {
+    ew.close();
+  }
+});
+
+test("English editor translates controls without translating user data or YAML keys", async () => {
+  const services =
+    "- Настройки:\n    - Сервисы:\n        description: Нет несохранённых изменений\n        href: https://example.com\n        widget:\n          type: grafana\n          url: https://example.com\n";
+  writeFileSync(join(dir, "services.yaml"), services);
+  const dom = await setup({ language: "en" }),
+    w = dom.window,
+    d = w.document;
+  try {
+    [...d.querySelectorAll("nav button")]
+      .find((b) => b.textContent.includes("Services"))
+      .click();
+    await idle(w);
+    assert.ok(block(w, "Настройки"));
+    assert.ok(block(w, "Сервисы"));
+    const input = block(w, "description").querySelector("input");
+    assert.equal(input.value, "Нет несохранённых изменений");
+    assert.ok(block(w, "description").textContent.includes("Description"));
+    block(w, "widget").querySelector(":scope > summary .context-add").click();
+    assert.ok(
+      d.getElementById("dialog-body").textContent.includes("Widget parameter"),
+    );
+    d.getElementById("dialog").close();
+    type(w, input, "Моё описание");
+    click(w, "#save");
+    await idle(w);
+    const saved = readFileSync(join(dir, "services.yaml"), "utf8");
+    assert.match(saved, /Настройки:/);
+    assert.match(saved, /Сервисы:/);
+    assert.match(saved, /description: Моё описание/);
+    assert.match(saved, /type: grafana/);
+    assert.equal(
+      d.getElementById("dirty-label").textContent,
+      "No unsaved changes",
+    );
+    assert.equal(
+      w.translateApiError(
+        "Не удалось загрузить изображение: connection refused",
+      ),
+      "Could not download image: connection refused",
+    );
+    assert.equal(
+      w.translateApiError("Неизвестная ошибка upstream"),
+      "Неизвестная ошибка upstream",
+    );
+  } finally {
+    w.close();
+  }
+});
+
+test("settings catalog groups variants and applies the selected example", async () => {
+  writeFileSync(join(dir, "settings.yaml"), "title: Test\n");
+  const dom = await setup(),
+    w = dom.window,
+    d = w.document;
+  try {
+    new Script("library()").runInContext(dom.getInternalVMContext());
+    const cards = [...d.querySelectorAll(".library-entry")];
+    assert.equal(
+      new Set(cards.map((card) => card.dataset.catalogKey)).size,
+      cards.length,
+    );
+    const card = d.querySelector('[data-catalog-key="background"]');
+    const titleCard = d.querySelector('[data-catalog-key="title"]');
+    assert.equal(titleCard.querySelector("button").disabled, true);
+    assert.equal(
+      titleCard.querySelector(".catalog-added").textContent,
+      "Уже добавлено",
+    );
+    assert.equal(
+      titleCard.querySelector(".catalog-added").classList.contains("hidden"),
+      false,
+    );
+    assert.equal(card.querySelector("button").disabled, false);
+    assert.equal(card.querySelectorAll("select option").length, 3);
+    assert.ok(card.textContent.includes("Фон страницы"));
+    const choice = card.querySelector("select");
+    choice.value = "2";
+    choice.dispatchEvent(new w.Event("change"));
+    assert.ok(card.querySelector("pre").textContent.includes("opacity: 50"));
+    card.querySelector("button").click();
+    new Script("library()").runInContext(dom.getInternalVMContext());
+    const existing = d.querySelector('[data-catalog-key="background"]');
+    assert.equal(existing.querySelector("button").disabled, true);
+    const existingChoice = existing.querySelector("select");
+    existingChoice.value = "1";
+    existingChoice.dispatchEvent(new w.Event("change"));
+    assert.equal(existing.querySelector("button").disabled, true);
+    assert.ok(existing.querySelector(".library-doc").href);
+    d.getElementById("dialog").close();
+    click(w, "#save");
+    await idle(w);
+    assert.match(
+      readFileSync(join(dir, "settings.yaml"), "utf8"),
+      /opacity: 50/,
+    );
+    assert.equal(
+      d.getElementById("appearance-open").textContent.trim(),
+      "◫ Превью",
+    );
+  } finally {
+    w.close();
+  }
+});
+
+test("layout groups have enum controls and typed templates including nested and ordered groups", async () => {
+  writeFileSync(
+    join(dir, "settings.yaml"),
+    "layout:\n  Home:\n    style: grid # keep comment\n    columns: 4\n    Nested:\n      style: column\n",
+  );
+  const dom = await setup(),
+    w = dom.window,
+    d = w.document;
+  try {
+    const group = block(w, "Home");
+    const style = group.querySelector('[data-block-name="style"] select');
+    assert.deepEqual(
+      [...style.options].map((o) => o.value),
+      ["row", "column", "grid"],
+    );
+    assert.equal(style.value, "grid");
+    assert.ok(
+      style.selectedOptions[0].textContent.includes("Неподдерживаемое"),
+    );
+    type(w, style, "row");
+    const columns = group.querySelector('[data-block-name="columns"] select');
+    assert.equal(columns.options.length, 8);
+    type(w, columns, "6");
+    const nested = block(w, "Nested");
+    assert.equal(
+      nested.querySelector('[data-block-name="style"] select').value,
+      "column",
+    );
+    const templateButton = [...nested.querySelectorAll(".add-inline")].find(
+      (b) => b.textContent.includes("Параметр из шаблона"),
+    );
+    assert.ok(templateButton);
+    templateButton.click();
+    for (const key of [
+      "style",
+      "columns",
+      "header",
+      "icon",
+      "initiallyCollapsed",
+      "tab",
+      "useEqualHeights",
+      "iconsOnly",
+    ])
+      assert.ok(d.querySelector(`[data-parameter="${key}"]`), key);
+    assert.equal(d.querySelector('[data-parameter="style"]').disabled, true);
+    d.querySelector('[data-parameter="header"]').click();
+    assert.equal(
+      block(w, "Nested").querySelector('[data-block-name="header"] input').type,
+      "checkbox",
+    );
+    click(w, "#save");
+    await idle(w);
+    const saved = readFileSync(join(dir, "settings.yaml"), "utf8");
+    assert.match(saved, /style: row # keep comment/);
+    assert.match(saved, /columns: 6/);
+    assert.match(saved, /header: true/);
+    click(w, "#raw-tab");
+    await idle(w);
+    type(
+      w,
+      d.getElementById("raw"),
+      "layout:\n  - Ordered:\n      style: row\n      columns: 3\n",
+    );
+    click(w, "#visual-tab");
+    await idle(w);
+    assert.equal(
+      block(w, "Ordered").querySelector('[data-block-name="columns"] select')
+        .value,
+      "3",
+    );
+  } finally {
+    w.close();
+  }
+});
+
+test("bookmarks create named groups and links with typed parameter templates", async () => {
+  writeFileSync(join(dir, "bookmarks.yaml"), "- Existing: []\n");
+  const dom = await setup(),
+    w = dom.window,
+    d = w.document;
+  try {
+    [...d.querySelectorAll("nav button")]
+      .find((b) => b.textContent.includes("Закладки"))
+      .click();
+    await idle(w);
+    click(w, "#add-root");
+    type(w, d.querySelector("#dialog-body input"), "Links");
+    click(w, "#dialog-actions .primary");
+    block(w, "Links").querySelector(".add-inline").click();
+    const inputs = d.querySelectorAll("#dialog-body input");
+    type(w, inputs[0], "Example");
+    type(w, inputs[1], "https://example.com");
+    click(w, "#dialog-actions .primary");
+    const bookmark = block(w, "Example");
+    assert.equal(bookmark.querySelectorAll("details").length, 0);
+    bookmark.querySelector(".add-inline").click();
+    for (const key of ["href", "abbr", "icon", "description", "target"])
+      assert.ok(d.querySelector(`[data-parameter="${key}"]`));
+    assert.equal(d.querySelector('[data-parameter="href"]').disabled, true);
+    d.querySelector('[data-parameter="target"]').click();
+    const target = block(w, "target").querySelector("select");
+    type(w, target, "_self");
+    click(w, "#save");
+    await idle(w);
+    const saved = readFileSync(join(dir, "bookmarks.yaml"), "utf8");
+    assert.match(saved, /- Links:/);
+    assert.match(saved, /- Example:/);
+    assert.match(saved, /- href: https:\/\/example.com/);
+    assert.match(saved, /target: _self/);
+  } finally {
+    w.close();
+  }
+});
+
+test("English dictionary covers explicit UI copy and preserves placeholders", () => {
+  const { createContext } = require("node:vm");
+  const context = createContext({});
+  new Script(
+    readFileSync("web/translations.en.js", "utf8") +
+      ";this.dictionary = englishStrings;",
+  ).runInContext(context);
+  const dictionary = context.dictionary;
+  const babel = require("prettier/plugins/babel");
+  for (const file of [
+    "app.js",
+    "appearance.js",
+    "panel-settings.js",
+    "server-settings.js",
+  ]) {
+    const ast = babel.parsers.babel.parse(readFileSync("web/" + file, "utf8"));
+    function visit(node) {
+      if (!node || typeof node !== "object") return;
+      if (
+        node.type === "CallExpression" &&
+        node.callee?.name === "t" &&
+        node.arguments[0]?.type === "StringLiteral"
+      ) {
+        const key = node.arguments[0].value;
+        assert.ok(
+          Object.hasOwn(dictionary, key),
+          "Missing translation: " + key,
+        );
+        assert.deepEqual(
+          (key.match(/\{\d+\}/g) || []).sort(),
+          (dictionary[key].match(/\{\d+\}/g) || []).sort(),
+        );
+      }
+      for (const [key, value] of Object.entries(node))
+        if (!["loc", "tokens", "comments", "extra"].includes(key)) {
+          if (Array.isArray(value)) value.forEach(visit);
+          else visit(value);
+        }
+    }
+    visit(ast);
+  }
+  const dom = new JSDOM(readFileSync("web/index.html", "utf8"));
+  try {
+    for (const el of dom.window.document.querySelectorAll("*"))
+      for (const attr of el.attributes) {
+        if (attr.name.startsWith("data-i18n"))
+          assert.ok(
+            Object.hasOwn(dictionary, attr.value),
+            "Missing static translation: " + attr.value,
+          );
+      }
+  } finally {
     dom.window.close();
   }
 });

@@ -2,154 +2,182 @@
 const $ = (id) => document.getElementById(id);
 const meta = {
   "settings.yaml": [
-    "Настройки",
-    "Настройте внешний вид и поведение главной страницы.",
+    t("Настройки"),
+    t("Настройте внешний вид и поведение главной страницы."),
     "⚙",
     "settings",
   ],
   "services.yaml": [
-    "Сервисы",
-    "Приложения, группы и виджеты ваших сервисов в одном месте.",
+    t("Сервисы"),
+    t("Приложения, группы и виджеты ваших сервисов в одном месте."),
     "▦",
     "services",
   ],
   "bookmarks.yaml": [
-    "Закладки",
-    "Соберите полезные ссылки и распределите их по группам.",
+    t("Закладки"),
+    t("Соберите полезные ссылки и распределите их по группам."),
     "⌑",
     "bookmarks",
   ],
   "widgets.yaml": [
-    "Инфовиджеты",
-    "Поиск, часы, погода и информация о вашей системе.",
+    t("Инфовиджеты"),
+    t("Поиск, часы, погода и информация о вашей системе."),
     "◫",
     "info-widgets",
   ],
   "docker.yaml": [
     "Docker",
-    "Подключения для обнаружения контейнеров и их статуса.",
+    t("Подключения для обнаружения контейнеров и их статуса."),
     "◇",
     "docker",
   ],
   "kubernetes.yaml": [
     "Kubernetes",
-    "Обнаружение сервисов и настройки подключения к кластеру.",
+    t("Обнаружение сервисов и настройки подключения к кластеру."),
     "⎈",
     "kubernetes",
   ],
   "proxmox.yaml": [
     "Proxmox",
-    "Подключения к узлам виртуализации Proxmox.",
+    t("Подключения к узлам виртуализации Proxmox."),
     "▱",
     "proxmox",
   ],
   "custom.css": [
-    "Стили CSS",
-    "Добавьте собственные стили для вашего Homepage.",
+    t("Стили CSS"),
+    t("Добавьте собственные стили для вашего Homepage."),
     "{ }",
     "custom-css-js",
   ],
   "custom.js": [
-    "Скрипты JS",
-    "Собственный JavaScript, который выполняется в Homepage.",
+    t("Скрипты JS"),
+    t("Собственный JavaScript, который выполняется в Homepage."),
     "</>",
     "custom-css-js",
   ],
 };
 const labels = {
-  title: ["Название страницы", "Отображается во вкладке браузера"],
-  description: ["Описание", "Описание вашей главной страницы"],
-  theme: ["Тема оформления", "Светлый или тёмный интерфейс Homepage"],
-  color: ["Цветовая палитра", "Основной цвет элементов интерфейса"],
-  language: ["Язык интерфейса", "Например: ru, en, de"],
-  headerStyle: ["Стиль заголовка", "Оформление заголовков групп"],
-  layout: ["Расположение групп", "Столбцы, вкладки, иконки и порядок групп"],
-  background: ["Фон страницы", "URL изображения или объект с фильтрами"],
-  cardBlur: ["Размытие карточек", "xs, sm, md, lg, xl…"],
-  cardStyle: ["Обводка карточек", "Тень или тонкая рамка"],
+  title: [t("Название страницы"), t("Отображается во вкладке браузера")],
+  description: [t("Описание"), t("Описание вашей главной страницы")],
+  theme: [t("Тема оформления"), t("Светлый или тёмный интерфейс Homepage")],
+  color: [t("Цветовая палитра"), t("Основной цвет элементов интерфейса")],
+  language: [t("Язык интерфейса"), t("Например: ru, en, de")],
+  headerStyle: [t("Стиль заголовка"), t("Оформление заголовков групп")],
+  layout: [
+    t("Расположение групп"),
+    t("Столбцы, вкладки, иконки и порядок групп"),
+  ],
+  background: [t("Фон страницы"), t("URL изображения или объект с фильтрами")],
+  cardBlur: [t("Размытие карточек"), "xs, sm, md, lg, xl…"],
+  cardStyle: [t("Обводка карточек"), t("Тень или тонкая рамка")],
   blockStyle: [
-    "Оформление показателей",
-    "Стиль чисел и подписей внутри виджетов",
+    t("Оформление показателей"),
+    t("Стиль чисел и подписей внутри виджетов"),
   ],
-  font: ["Шрифт страницы", "Основной шрифт или моноширинное оформление"],
-  header: ["Название группы", "Показывать заголовок этой группы"],
+  font: [t("Шрифт страницы"), t("Основной шрифт или моноширинное оформление")],
+  header: [t("Название группы"), t("Показывать заголовок этой группы")],
   initiallyCollapsed: [
-    "Сворачивать при открытии",
-    "Начальное состояние группы на странице",
+    t("Сворачивать при открытии"),
+    t("Начальное состояние группы на странице"),
   ],
-  tab: ["Вкладка", "На какой вкладке показывать группу"],
-  favicon: ["Иконка страницы", "URL или путь к favicon"],
-  target: ["Открывать ссылки", "Где открывать страницу при нажатии на ссылку"],
-  startUrl: ["Стартовый адрес", "Стартовый URL для PWA"],
-  base: ["Базовый URL", "Базовый URL вашего Homepage"],
-  fullWidth: ["На всю ширину", "Использовать доступную ширину страницы"],
-  maxGroupColumns: ["Максимум колонок", "Число колонок для групп"],
+  tab: [t("Вкладка"), t("На какой вкладке показывать группу")],
+  favicon: [t("Иконка страницы"), t("URL или путь к favicon")],
+  target: [
+    t("Открывать ссылки"),
+    t("Где открывать страницу при нажатии на ссылку"),
+  ],
+  startUrl: [t("Стартовый адрес"), t("Стартовый URL для PWA")],
+  base: [t("Базовый URL"), t("Базовый URL вашего Homepage")],
+  fullWidth: [t("На всю ширину"), t("Использовать доступную ширину страницы")],
+  maxGroupColumns: [t("Максимум колонок"), t("Число колонок для групп")],
   useEqualHeights: [
-    "Одинаковая высота карточек",
-    "Выравнивать высоту карточек сервисов",
+    t("Одинаковая высота карточек"),
+    t("Выравнивать высоту карточек сервисов"),
   ],
-  hideVersion: ["Скрыть версию", "Не показывать версию Homepage"],
+  hideVersion: [t("Скрыть версию"), t("Не показывать версию Homepage")],
   disableUpdateCheck: [
-    "Отключить проверку обновлений",
-    "Не проверять доступность новых версий",
+    t("Отключить проверку обновлений"),
+    t("Не проверять доступность новых версий"),
   ],
-  showStats: ["Статистика контейнеров", "Показывать статистику Docker"],
-  statusStyle: ["Стиль статуса", "Как показывать доступность сервиса"],
+  showStats: [t("Статистика контейнеров"), t("Показывать статистику Docker")],
+  statusStyle: [t("Стиль статуса"), t("Как показывать доступность сервиса")],
   hideErrors: [
-    "Скрыть ошибки виджетов",
-    "Скрывать сообщения об ошибках в виджетах",
+    t("Скрыть ошибки виджетов"),
+    t("Скрывать сообщения об ошибках в виджетах"),
   ],
   disableIndexing: [
-    "Запретить индексацию",
-    "Попросить поисковые системы не индексировать страницу",
+    t("Запретить индексацию"),
+    t("Попросить поисковые системы не индексировать страницу"),
   ],
-  instanceName: ["Имя экземпляра", "Различать несколько экземпляров Homepage"],
-  quicklaunch: ["Быстрый поиск", "Настройки быстрого запуска"],
-  providers: ["Провайдеры", "Общие ключи API для виджетов"],
-  logpath: ["Каталог логов", "Путь логов в процессе Homepage"],
-  href: ["Адрес ссылки", "URL приложения или закладки"],
-  icon: ["Иконка", "Например: jellyfin.png или mdi-server"],
-  widget: ["Виджет сервиса", "Тип, адрес, ключ API и параметры интеграции"],
-  widgets: ["Виджеты сервиса", "Несколько виджетов в одной карточке"],
-  server: ["Сервер", "Имя подключения из docker.yaml"],
-  container: ["Контейнер", "Имя Docker-контейнера"],
-  ping: ["Проверка доступности", "Адрес для проверки доступности"],
-  siteMonitor: ["HTTP-мониторинг", "URL для проверки статуса"],
-  type: ["Тип виджета", "Идентификатор интеграции Homepage"],
-  url: ["Адрес подключения", "URL вашего сервиса"],
-  key: ["Ключ API", "Поддерживаются {{HOMEPAGE_VAR_…}}"],
+  instanceName: [
+    t("Имя экземпляра"),
+    t("Различать несколько экземпляров Homepage"),
+  ],
+  quicklaunch: [t("Быстрый поиск"), t("Настройки быстрого запуска")],
+  providers: [t("Провайдеры"), t("Общие ключи API для виджетов")],
+  logpath: [t("Каталог логов"), t("Путь логов в процессе Homepage")],
+  href: [t("Адрес ссылки"), t("URL приложения или закладки")],
+  icon: [t("Иконка"), t("Например: jellyfin.png или mdi-server")],
+  widget: [
+    t("Виджет сервиса"),
+    t("Тип, адрес, ключ API и параметры интеграции"),
+  ],
+  widgets: [t("Виджеты сервиса"), t("Несколько виджетов в одной карточке")],
+  server: [t("Сервер"), t("Имя подключения из docker.yaml")],
+  container: [t("Контейнер"), t("Имя Docker-контейнера")],
+  ping: [t("Проверка доступности"), t("Адрес для проверки доступности")],
+  siteMonitor: [t("HTTP-мониторинг"), t("URL для проверки статуса")],
+  type: [t("Тип виджета"), t("Идентификатор интеграции Homepage")],
+  url: [t("Адрес подключения"), t("URL вашего сервиса")],
+  key: [t("Ключ API"), t("Поддерживаются {{HOMEPAGE_VAR_…}}")],
   username: [
-    "Пользователь / ID токена",
-    "Учётная запись или идентификатор API-токена сервиса",
+    t("Пользователь / ID токена"),
+    t("Учётная запись или идентификатор API-токена сервиса"),
   ],
-  password: ["Пароль / секрет токена", "Секрет для подключения к сервису"],
-  node: ["Узел", "Имя узла, например pve-1"],
-  version: ["Версия API", "Версия API, поддерживаемая вашим сервисом"],
-  enableBlocks: ["Блоки статистики", "Показывать блоки статистики виджета"],
+  password: [
+    t("Пароль / секрет токена"),
+    t("Секрет для подключения к сервису"),
+  ],
+  node: [t("Узел"), t("Имя узла, например pve-1")],
+  version: [t("Версия API"), t("Версия API, поддерживаемая вашим сервисом")],
+  enableBlocks: [
+    t("Блоки статистики"),
+    t("Показывать блоки статистики виджета"),
+  ],
   enableNowPlaying: [
-    "Сейчас воспроизводится",
-    "Показывать текущие медиасеансы",
+    t("Сейчас воспроизводится"),
+    t("Показывать текущие медиасеансы"),
   ],
-  socket: ["Docker socket", "Путь сокета внутри контейнера Homepage"],
+  socket: ["Docker socket", t("Путь сокета внутри контейнера Homepage")],
   fields: [
-    "Показываемые показатели",
-    "Список показателей виджета и порядок их отображения",
+    t("Показываемые показатели"),
+    t("Список показателей виджета и порядок их отображения"),
   ],
   headers: [
-    "Заголовки API",
-    "Дополнительные HTTP-заголовки для запросов к сервису",
+    t("Заголовки API"),
+    t("Дополнительные HTTP-заголовки для запросов к сервису"),
   ],
-  host: ["Хост", "Адрес сервера"],
-  port: ["Порт", "Порт подключения"],
-  mode: ["Режим подключения", "default или disabled"],
-  abbr: ["Сокращение", "Короткая подпись вместо иконки"],
-  style: ["Расположение", "row или column"],
-  columns: ["Колонки", "Количество колонок группы"],
-  image: ["Изображение", "Адрес или локальный путь к изображению"],
-  blur: ["Размытие фона", "Степень размытия фонового изображения"],
-  brightness: ["Яркость фона", "100 — исходная яркость; меньше — темнее"],
-  saturate: ["Насыщенность фона", "100 — исходная насыщенность цветов"],
-  opacity: ["Непрозрачность фона", "От 0 — прозрачный до 100 — непрозрачный"],
+  host: [t("Хост"), t("Адрес сервера")],
+  port: [t("Порт"), t("Порт подключения")],
+  mode: [t("Режим подключения"), t("default или disabled")],
+  abbr: [t("Сокращение"), t("Короткая подпись вместо иконки")],
+  style: [
+    t("Расположение"),
+    t("Строка на всю ширину или вертикальный столбец"),
+  ],
+  iconsOnly: [t("Только иконки"), t("Показывать закладки группы без подписей")],
+  columns: [
+    t("Колонки карточек"),
+    t("От 1 до 8; используется при расположении в строку"),
+  ],
+  image: [t("Изображение"), t("Адрес или локальный путь к изображению")],
+  blur: [t("Размытие фона"), t("Степень размытия фонового изображения")],
+  brightness: [t("Яркость фона"), t("100 — исходная яркость; меньше — темнее")],
+  saturate: [t("Насыщенность фона"), t("100 — исходная насыщенность цветов")],
+  opacity: [
+    t("Непрозрачность фона"),
+    t("От 0 — прозрачный до 100 — непрозрачный"),
+  ],
 };
 const settingDefaults = {
   title: "Мой Homepage",
@@ -193,8 +221,8 @@ const settingDefaults = {
 const presets = {
   "settings.yaml": [
     [
-      "Базовое оформление",
-      "Тема, палитра, язык и заголовок",
+      t("Базовое оформление"),
+      t("Тема, палитра, язык и заголовок"),
       {
         title: "Мой Homepage",
         theme: "dark",
@@ -205,8 +233,8 @@ const presets = {
       },
     ],
     [
-      "Макет групп",
-      "Группы в три колонки",
+      t("Макет групп"),
+      t("Группы в три колонки"),
       {
         layout: { Инфраструктура: { style: "row", columns: 3 } },
         useEqualHeights: true,
@@ -215,8 +243,8 @@ const presets = {
   ],
   "services.yaml": [
     [
-      "Группа сервисов",
-      "Группа с примером приложения",
+      t("Группа сервисов"),
+      t("Группа с примером приложения"),
       {
         Инфраструктура: [
           {
@@ -231,7 +259,7 @@ const presets = {
     ],
     [
       "Jellyfin",
-      "Медиасервер с виджетом",
+      t("Медиасервер с виджетом"),
       {
         Медиа: [
           {
@@ -251,8 +279,8 @@ const presets = {
       },
     ],
     [
-      "Docker-сервис",
-      "Карточка со статусом контейнера",
+      t("Docker-сервис"),
+      t("Карточка со статусом контейнера"),
       {
         Инфраструктура: [
           {
@@ -269,8 +297,8 @@ const presets = {
   ],
   "bookmarks.yaml": [
     [
-      "Группа закладок",
-      "Ссылки с иконками и сокращениями",
+      t("Группа закладок"),
+      t("Ссылки с иконками и сокращениями"),
       {
         Полезное: [
           {
@@ -288,13 +316,13 @@ const presets = {
   ],
   "widgets.yaml": [
     [
-      "Поиск",
-      "Поиск через DuckDuckGo",
+      t("Поиск"),
+      t("Поиск через DuckDuckGo"),
       { search: { provider: "duckduckgo", target: "_blank" } },
     ],
     [
-      "Дата и время",
-      "Часы в формате 24 часа",
+      t("Дата и время"),
+      t("Часы в формате 24 часа"),
       {
         datetime: {
           text_size: "xl",
@@ -303,18 +331,18 @@ const presets = {
       },
     ],
     [
-      "Ресурсы",
-      "CPU, память и диск процесса Homepage",
+      t("Ресурсы"),
+      t("CPU, память и диск процесса Homepage"),
       { resources: { cpu: true, memory: true, disk: "/" } },
     ],
     [
-      "Приветствие",
-      "Текст в верхней части страницы",
+      t("Приветствие"),
+      t("Текст в верхней части страницы"),
       { greeting: { text_size: "xl", text: "Добро пожаловать домой" } },
     ],
     [
       "Open-Meteo",
-      "Погода без ключа API",
+      t("Погода без ключа API"),
       {
         openmeteo: {
           label: "Саратов",
@@ -330,27 +358,31 @@ const presets = {
   "docker.yaml": [
     [
       "Socket",
-      "Локальный Docker socket",
+      t("Локальный Docker socket"),
       { "my-docker": { socket: "/var/run/docker.sock" } },
     ],
     [
       "Socket proxy",
-      "Подключение к Docker socket proxy",
+      t("Подключение к Docker socket proxy"),
       { "my-docker": { host: "dockerproxy", port: 2375 } },
     ],
   ],
   "kubernetes.yaml": [
     [
-      "Обнаружение сервисов",
-      "Использовать конфигурацию кластера",
+      t("Обнаружение сервисов"),
+      t("Использовать конфигурацию кластера"),
       { mode: "default" },
     ],
-    ["Отключить", "Отключить интеграцию с кластером", { mode: "disabled" }],
+    [
+      t("Отключить"),
+      t("Отключить интеграцию с кластером"),
+      { mode: "disabled" },
+    ],
   ],
   "proxmox.yaml": [
     [
-      "Узел Proxmox",
-      "URL и API-токен",
+      t("Узел Proxmox"),
+      t("URL и API-токен"),
       {
         pve: {
           url: "https://proxmox.example.com:8006",
@@ -410,7 +442,7 @@ function node(v) {
 const root = () => current?.tree?.Content?.[0];
 const isCode = () => current && /\.(css|js)$/.test(current.name);
 const info = (n) =>
-  meta[n] || [n, "Дополнительный файл конфигурации Homepage.", "≡", ""];
+  meta[n] || [n, t("Дополнительный файл конфигурации Homepage."), "≡", ""];
 function showError(message) {
   $("error").textContent = message || "";
   $("error").classList.toggle("hidden", !message);
@@ -436,11 +468,14 @@ async function api(path, options = {}) {
   if (!type.includes("application/json"))
     throw Error(
       response.status === 401
-        ? "Необходима авторизация. Обновите страницу."
-        : "Сервер вернул неожиданный ответ (" + response.status + ")",
+        ? t("Необходима авторизация. Обновите страницу.")
+        : t("Сервер вернул неожиданный ответ (") + response.status + ")",
     );
   const data = await response.json();
-  if (!response.ok) throw Error(data.error || "Ошибка запроса");
+  if (!response.ok)
+    throw Error(
+      data.error ? translateApiError(data.error) : t("Ошибка запроса"),
+    );
   return data;
 }
 async function run(fn) {
@@ -465,11 +500,11 @@ function mark() {
 }
 function updateState() {
   document.querySelector(".savebar strong").textContent = pendingAppearanceCSS
-    ? "Будут сохранены settings.yaml и custom.css"
-    : "Сохраняется только текущий файл";
+    ? t("Будут сохранены settings.yaml и custom.css")
+    : t("Сохраняется только текущий файл");
   $("dirty-label").textContent = dirty
-    ? "Есть несохранённые изменения"
-    : "Нет несохранённых изменений";
+    ? t("Есть несохранённые изменения")
+    : t("Нет несохранённых изменений");
   $("dirty-dot").style.background = dirty ? "#d7a446" : "#43ad8b";
   $("save").disabled = busy || !dirty;
   $("review").disabled = busy || !dirty;
@@ -492,7 +527,7 @@ async function load(name, force = false) {
     !force &&
     dirty &&
     !confirm(
-      "Есть несохранённые изменения. Перейти к другому файлу и потерять их?",
+      t("Есть несохранённые изменения. Перейти к другому файлу и потерять их?"),
     )
   )
     return;
@@ -521,33 +556,34 @@ function renderPage() {
   $("filename").textContent = current.name;
   $("docs").href =
     "https://gethomepage.dev/configs/" + (m[3] ? m[3] + "/" : "");
-  $("raw-tab").textContent = isCode() ? "</> Код" : "</> YAML";
+  $("raw-tab").textContent = isCode() ? t("</> Код") : "</> YAML";
   $("raw-label").textContent = isCode()
     ? (current.name.endsWith("css") ? "CSS" : "JavaScript") + " · UTF-8"
     : "YAML · UTF-8";
   $("file-status").textContent = current.error
-    ? "Ошибка YAML"
+    ? t("Ошибка YAML")
     : current.exists
-      ? "Файл подключён"
-      : "Новая конфигурация";
+      ? t("Файл подключён")
+      : t("Новая конфигурация");
   $("file-detail").textContent = current.error
-    ? "Исправьте исходный код"
+    ? t("Исправьте исходный код")
     : current.exists
-      ? "Готов к редактированию"
-      : "Будет создан при сохранении";
+      ? t("Готов к редактированию")
+      : t("Будет создан при сохранении");
   $("visual-tab").disabled = isCode();
   $("appearance-open").classList.toggle(
     "hidden",
     current.name !== "settings.yaml",
   );
-  $("add-root").textContent =
-    current.name === "services.yaml"
-      ? "＋ Добавить группу"
-      : current.name === "widgets.yaml"
-        ? "＋ Добавить виджет"
-        : current.name === "settings.yaml"
-          ? "＋ Добавить настройку"
-          : "＋ Добавить параметр";
+  $("add-root").textContent = ["services.yaml", "bookmarks.yaml"].includes(
+    current.name,
+  )
+    ? t("＋ Добавить группу")
+    : current.name === "widgets.yaml"
+      ? t("＋ Добавить виджет")
+      : current.name === "settings.yaml"
+        ? t("＋ Добавить настройку")
+        : t("＋ Добавить параметр");
   $("icon-import").classList.toggle(
     "hidden",
     !["services.yaml", "bookmarks.yaml"].includes(current.name),
@@ -658,7 +694,7 @@ function moveBlock(source, targetParent, targetIndex) {
   targetParent.Content.splice(targetIndex, 0, ...chunk);
   mark();
   renderTree();
-  toast("Блок перемещён. Сохраните изменения, чтобы применить порядок.");
+  toast(t("Блок перемещён. Сохраните изменения, чтобы применить порядок."));
   return true;
 }
 function clearBlockDrag() {
@@ -677,21 +713,21 @@ function clearBlockDrag() {
 }
 function blockMoveDialog(source) {
   openDialog(
-    "Переместить блок",
-    "Выберите группу для «" +
+    t("Переместить блок"),
+    t("Выберите группу для «") +
       source.name +
-      "». Блок будет добавлен в конец выбранной группы.",
+      t("». Блок будет добавлен в конец выбранной группы."),
   );
   const groups = movableGroups.filter(
     (g) => g.parent !== source.parent && canMoveBlock(source, g.parent),
   );
   const destination = field(
-    "Группа",
+    t("Группа"),
     select(groups.map((g, i) => [String(i), g.name])),
   );
   $("dialog-actions").append(
-    button("Отмена", "secondary", () => $("dialog").close()),
-    button("Переместить", "primary", () => {
+    button(t("Отмена"), "secondary", () => $("dialog").close()),
+    button(t("Переместить"), "primary", () => {
       const target = groups[Number(destination.value)]?.parent;
       if (!target) return;
       $("dialog").close();
@@ -708,7 +744,7 @@ function attachBlockMovement(element, header, actions, source) {
     ev.stopPropagation();
   });
   handle.draggable = true;
-  handle.title = "Перетащить блок «" + source.name + "»";
+  handle.title = t("Перетащить блок «") + source.name + "»";
   handle.setAttribute("aria-label", handle.title);
   handle.addEventListener("dragstart", (ev) => {
     if (busy) {
@@ -726,8 +762,8 @@ function attachBlockMovement(element, header, actions, source) {
   header.prepend(handle);
   const size = source.parent.Kind === 4 ? 2 : 1;
   for (const [label, delta, word] of [
-    ["↑", -size, "выше"],
-    ["↓", size, "ниже"],
+    ["↑", -size, t("выше")],
+    ["↓", size, t("ниже")],
   ]) {
     const b = button(label, "block-move-button", (ev) => {
       ev.preventDefault();
@@ -742,7 +778,7 @@ function attachBlockMovement(element, header, actions, source) {
           .find(
             (b) =>
               b.getAttribute("aria-label") ===
-              "Переместить «" + source.name + "» " + word,
+              t("Переместить «") + source.name + "» " + word,
           )
           ?.focus();
       }
@@ -751,7 +787,7 @@ function attachBlockMovement(element, header, actions, source) {
       delta < 0
         ? source.index === 0
         : source.index + size >= source.parent.Content.length;
-    b.title = "Переместить «" + source.name + "» " + word;
+    b.title = t("Переместить «") + source.name + "» " + word;
     b.setAttribute("aria-label", b.title);
     actions.append(b);
   }
@@ -765,7 +801,7 @@ function attachBlockMovement(element, header, actions, source) {
       ev.stopPropagation();
       blockMoveDialog(source);
     });
-    b.title = "Переместить «" + source.name + "» в другую группу";
+    b.title = t("Переместить «") + source.name + t("» в другую группу");
     b.setAttribute("aria-label", b.title);
     actions.append(b);
   }
@@ -812,7 +848,7 @@ function appendGroupDropzone(parent, container) {
   const zone = make(
     "div",
     "block-dropzone",
-    "Перетащите блок в группу «" + group.name + "»",
+    t("Перетащите блок в группу «") + group.name + "»",
   );
   zone.addEventListener("dragover", (ev) => {
     ev.stopPropagation();
@@ -855,17 +891,21 @@ function renderTree(resetExpansion = false) {
       make(
         "h3",
         "",
-        current.exists ? "Пока здесь пусто" : "Начните с удобного шаблона",
+        current.exists
+          ? t("Пока здесь пусто")
+          : t("Начните с удобного шаблона"),
       ),
       make(
         "p",
         "",
-        "Добавьте настройки вручную или выберите шаблон. Файл появится на диске после сохранения.",
+        t(
+          "Добавьте настройки вручную или выберите шаблон. Файл появится на диске после сохранения.",
+        ),
       ),
     );
     wrap.append(
-      button("Выбрать шаблон", "primary", () => templates(n)),
-      button("Добавить вручную", "secondary", () => addDialog(n)),
+      button(t("Выбрать шаблон"), "primary", () => templates(n)),
+      button(t("Добавить вручную"), "secondary", () => addDialog(n)),
     );
     e.append(wrap);
     return;
@@ -875,7 +915,9 @@ function renderTree(resetExpansion = false) {
     make(
       "p",
       "hint",
-      "Тяните блоки за ⠿ или используйте ↑ / ↓. Кнопка ↗ переносит сервис или закладку в другую группу. Порядок записывается после сохранения.",
+      t(
+        "Тяните блоки за ⠿ или используйте ↑ / ↓. Кнопка ↗ переносит сервис или закладку в другую группу. Порядок записывается после сохранения.",
+      ),
     ),
   );
   filter();
@@ -932,24 +974,26 @@ function openBlockAdd(context) {
     actions.push(
       [
         "service",
-        "Новый сервис",
-        "Название и адрес приложения",
+        t("Новый сервис"),
+        t("Название и адрес приложения"),
         () => addServiceDialog(context.node),
       ],
       [
         "service-template",
-        "Сервис из каталога",
-        "Карточка приложения с готовой интеграцией",
+        t("Сервис из каталога"),
+        t("Карточка приложения с готовой интеграцией"),
         () => library({ destinationGroup: context.node }),
       ],
     );
   } else {
     actions.push([
       "parameter",
-      context.kind === "service" ? "Параметр сервиса" : "Параметр виджета",
       context.kind === "service"
-        ? "Иконка, описание, мониторинг и другие свойства"
-        : "Настройки выбранной интеграции",
+        ? t("Параметр сервиса")
+        : t("Параметр виджета"),
+      context.kind === "service"
+        ? t("Иконка, описание, мониторинг и другие свойства")
+        : t("Настройки выбранной интеграции"),
       () => parameterDialog(context.node),
     ]);
     if (
@@ -959,9 +1003,9 @@ function openBlockAdd(context) {
       actions.push([
         "widget",
         context.kind === "widget"
-          ? "Добавить ещё один виджет"
-          : "Подключить виджет",
-        "Выбрать интеграцию из каталога",
+          ? t("Добавить ещё один виджет")
+          : t("Подключить виджет"),
+        t("Выбрать интеграцию из каталога"),
         () => library({ serviceTarget: context.service || context.node }),
       ]);
     }
@@ -972,11 +1016,11 @@ function openBlockAdd(context) {
   }
   openDialog(
     context.kind === "group"
-      ? "Добавить в группу"
+      ? t("Добавить в группу")
       : context.kind === "service"
-        ? "Добавить в сервис"
-        : "Настроить виджет",
-    "Действие относится только к выбранному блоку.",
+        ? t("Добавить в сервис")
+        : t("Настроить виджет"),
+    t("Действие относится только к выбранному блоку."),
   );
   const grid = make("div", "template-grid");
   for (const [id, title, description, action] of actions) {
@@ -990,19 +1034,59 @@ function openBlockAdd(context) {
   }
   $("dialog-body").append(grid);
 }
+const layoutGroupDefaults = {
+  style: "row",
+  columns: 4,
+  header: true,
+  icon: "mdi-folder",
+  initiallyCollapsed: false,
+  tab: "Main",
+  useEqualHeights: true,
+  iconsOnly: false,
+};
+function isLayoutGroup(parent) {
+  if (current?.name !== "settings.yaml" || parent?.Kind !== 4) return false;
+  const layout = mapValue(root(), "layout");
+  function visit(container) {
+    if (container?.Kind === 2) return (container.Content || []).some(visit);
+    if (container?.Kind !== 4) return false;
+    for (let i = 0; i < (container.Content || []).length; i += 2) {
+      const child = container.Content[i + 1];
+      if (child?.Kind !== 4) continue;
+      if (child === parent || visit(child)) return true;
+    }
+    return false;
+  }
+  return visit(layout);
+}
 function parameterTemplates(parent) {
   let examples = [];
-  if (current.name === "settings.yaml" && parent === root()) {
+  if (
+    current.name === "bookmarks.yaml" &&
+    findIconTargets(current.tree).some((item) => item.target === parent)
+  ) {
+    examples = [
+      node({
+        href: "https://example.com",
+        abbr: "HP",
+        icon: "mdi-bookmark",
+        description: "",
+        target: "_blank",
+      }),
+    ];
+  } else if (current.name === "settings.yaml" && parent === root()) {
     examples = [
       node(settingDefaults),
       ...(catalog.settings || []).map((e) => e.tree.Content[0]),
     ];
+  } else if (isLayoutGroup(parent)) {
+    examples = [node(layoutGroupDefaults)];
   } else if (serviceInfo(parent)) {
     examples = [
       node({
         href: "https://service.example.com",
         icon: "mdi-server",
-        description: "Описание сервиса",
+        description: t("Описание сервиса"),
         siteMonitor:
           mapValue(parent, "href")?.Value || "https://service.example.com",
         ping: "service.example.com",
@@ -1056,10 +1140,12 @@ function parameterDialog(parent) {
     return;
   }
   openDialog(
-    "Добавить параметр",
-    "Выберите готовую настройку. Подходящее поле ввода и начальное значение добавятся автоматически.",
+    t("Добавить параметр"),
+    t(
+      "Выберите готовую настройку. Подходящее поле ввода и начальное значение добавятся автоматически.",
+    ),
   );
-  const search = field("Найти настройку", make("input"));
+  const search = field(t("Найти настройку"), make("input"));
   search.type = "search";
   const grid = make("div", "template-grid");
   for (const { key, value } of templates) {
@@ -1079,19 +1165,19 @@ function parameterDialog(parent) {
         "small",
         "",
         exists
-          ? "Уже добавлено"
+          ? t("Уже добавлено")
           : labels[key.Value]?.[1] ||
               value.LineComment ||
               value.HeadComment ||
               (value.Kind === 4
-                ? "Раздел настроек"
+                ? t("Раздел настроек")
                 : value.Kind === 2
-                  ? "Список значений"
+                  ? t("Список значений")
                   : value.Tag === "!!bool"
-                    ? "Переключатель"
+                    ? t("Переключатель")
                     : ["!!int", "!!float"].includes(value.Tag)
-                      ? "Числовое поле"
-                      : "Текстовое поле"),
+                      ? t("Числовое поле")
+                      : t("Текстовое поле")),
       ),
     );
     grid.append(b);
@@ -1107,34 +1193,54 @@ function parameterDialog(parent) {
       );
   });
   $("dialog-actions").append(
-    button("Своё поле…", "secondary", () => {
+    button(t("Своё поле…"), "secondary", () => {
       $("dialog").close();
       addDialog(parent);
     }),
   );
 }
 function addServiceDialog(group = null) {
+  const bookmark = current.name === "bookmarks.yaml";
   openDialog(
-    group ? "Добавить сервис" : "Добавить группу",
     group
-      ? "Название и адрес приложения. Виджет и остальные настройки можно добавить в его карточке."
-      : "Группа объединяет сервисы на главной странице.",
+      ? bookmark
+        ? t("Добавить закладку")
+        : t("Добавить сервис")
+      : t("Добавить группу"),
+    bookmark
+      ? t("Укажите название группы или название и адрес закладки.")
+      : group
+        ? t(
+            "Название и адрес приложения. Виджет и остальные настройки можно добавить в его карточке.",
+          )
+        : t("Группа объединяет сервисы на главной странице."),
   );
-  const name = field("Название", make("input"));
-  const href = group ? field("Адрес приложения", make("input")) : null;
+  const name = field(t("Название"), make("input"));
+  const href = group
+    ? field(bookmark ? t("Адрес ссылки") : t("Адрес приложения"), make("input"))
+    : null;
   if (href) href.placeholder = "https://service.example.com";
   $("dialog-actions").append(
-    button("Добавить", "primary", () => {
+    button(t("Добавить"), "primary", () => {
       const title = name.value.trim(),
         list = group || root();
       if (!title || list.Content?.some((item) => mapValue(item, title))) {
-        toast("Укажите уникальное название");
+        toast(t("Укажите уникальное название"));
         return;
       }
       list.Content ||= [];
       list.Content.push(
         node({
-          [title]: group ? { href: href.value.trim(), description: "" } : [],
+          [title]: group
+            ? bookmark
+              ? [
+                  {
+                    href: href.value.trim(),
+                    abbr: title.slice(0, 2).toUpperCase(),
+                  },
+                ]
+              : { href: href.value.trim(), description: "" }
+            : [],
         }),
       );
       mark();
@@ -1162,7 +1268,9 @@ function attachServiceWidget(service, widget, replace = false) {
   if (multiple >= 0) {
     if (single >= 0 || service.Content[multiple + 1].Kind !== 2) {
       toast(
-        "В сервисе неоднозначные настройки виджетов. Выберите явную замену или исправьте их в YAML.",
+        t(
+          "В сервисе неоднозначные настройки виджетов. Выберите явную замену или исправьте их в YAML.",
+        ),
       );
       return false;
     }
@@ -1182,12 +1290,21 @@ function attachServiceWidget(service, widget, replace = false) {
 
 function renderChildren(parent, container, depth) {
   const content = parent.Content || [];
+  if (
+    current.name === "bookmarks.yaml" &&
+    parent.Kind === 2 &&
+    content.length === 1 &&
+    findIconTargets(current.tree).some((item) => item.target === content[0])
+  ) {
+    renderChildren(content[0], container, depth);
+    return;
+  }
   if (depth > 24) {
     container.append(
       make(
         "p",
         "hint",
-        "Большая глубина вложенности — используйте YAML-режим.",
+        t("Большая глубина вложенности — используйте YAML-режим."),
       ),
     );
     return;
@@ -1220,20 +1337,29 @@ function renderChildren(parent, container, depth) {
         );
         return;
       }
-      let title = "Элемент " + (i + 1);
+      let title = t("Элемент ") + (i + 1);
       if (value.Kind === 4 && value.Content?.length)
         title = mapValue(value, "type")?.Value || value.Content[0].Value;
       renderEntry(parent, i, title, value, container, depth);
     });
   }
-  if (!blockContext(parent) && depth > 0)
+  const bookmarkGroup =
+    current.name === "bookmarks.yaml" &&
+    movableGroups.some((group) => group.parent === parent);
+  if (bookmarkGroup)
+    container.append(
+      button(t("＋ Добавить закладку"), "add-inline", () =>
+        addServiceDialog(parent),
+      ),
+    );
+  else if (!blockContext(parent) && depth > 0)
     container.append(
       button(
         parent.Kind === 4
           ? parameterTemplates(parent).length
-            ? "＋ Параметр из шаблона"
-            : "＋ Добавить своё поле"
-          : "＋ Добавить элемент",
+            ? t("＋ Параметр из шаблона")
+            : t("＋ Добавить своё поле")
+          : t("＋ Добавить элемент"),
         "add-inline",
         () => (parent.Kind === 4 ? parameterDialog(parent) : addDialog(parent)),
       ),
@@ -1244,43 +1370,74 @@ function fieldChoices(name, parent) {
   if (mapValue(parent, "type")?.Value === "grafana") {
     if (name === "alerts")
       return [
-        ["grafana", "Встроенный Alertmanager Grafana"],
-        ["alertmanager", "Внешний источник с UID alertmanager"],
+        ["grafana", t("Встроенный Alertmanager Grafana")],
+        ["alertmanager", t("Внешний источник с UID alertmanager")],
       ];
     if (name === "version")
       return [
-        ["2", "Grafana новее 10.4"],
-        ["1", "Grafana 10.4 и старше"],
+        ["2", t("Grafana новее 10.4")],
+        ["1", t("Grafana 10.4 и старше")],
       ];
   }
   if (name === "target")
     return [
-      ["_blank", "В новой вкладке"],
-      ["_self", "В текущей вкладке"],
-      ["_top", "В основном окне"],
+      ["_blank", t("В новой вкладке")],
+      ["_self", t("В текущей вкладке")],
+      ["_top", t("В основном окне")],
     ];
   if (current.name !== "settings.yaml") return null;
+  if (isLayoutGroup(parent)) {
+    if (name === "style")
+      return [
+        ["row", t("На всю ширину строки")],
+        ["column", t("Вертикальный столбец")],
+      ];
+    if (name === "columns")
+      return Array.from({ length: 8 }, (_, i) => [
+        String(i + 1),
+        String(i + 1),
+      ]);
+  }
+  if (
+    (parent === root() && name === "cardBlur") ||
+    (parent === mapValue(root(), "background") && name === "blur")
+  )
+    return [
+      ["", t("Без размытия")],
+      ...["xs", "sm", "md", "lg", "xl", "2xl", "3xl"].map((value, i) => [
+        value,
+        [
+          t("Очень слабое"),
+          t("Слабое"),
+          t("Стандартное"),
+          t("Среднее"),
+          t("Сильное"),
+          t("Очень сильное"),
+          t("Максимальное"),
+        ][i],
+      ]),
+    ];
   const top = parent === root();
   if (top && name === "theme")
     return [
-      ["dark", "Тёмная"],
-      ["light", "Светлая"],
+      ["dark", t("Тёмная")],
+      ["light", t("Светлая")],
     ];
   if (top && name === "headerStyle")
     return [
-      ["underlined", "С подчёркиванием"],
-      ["boxed", "В рамке"],
-      ["clean", "Минималистичный"],
-      ["boxedWidgets", "Виджеты в рамке"],
+      ["underlined", t("С подчёркиванием")],
+      ["boxed", t("В рамке")],
+      ["clean", t("Минималистичный")],
+      ["boxedWidgets", t("Виджеты в рамке")],
     ];
   if (top && name === "statusStyle")
     return [
-      ["dot", "Цветная точка"],
-      ["basic", "Текстовый статус"],
+      ["dot", t("Цветная точка")],
+      ["basic", t("Текстовый статус")],
     ];
   if (top && name === "language")
     return [
-      ["ru", "Русский"],
+      ["ru", t("Русский")],
       ["en", "English"],
       ["de", "Deutsch"],
       ["fr", "Français"],
@@ -1288,54 +1445,54 @@ function fieldChoices(name, parent) {
     ];
   if (top && name === "color")
     return [
-      ["slate", "Серо-синий"],
-      ["gray", "Серый"],
-      ["zinc", "Цинковый"],
-      ["neutral", "Нейтральный"],
-      ["stone", "Каменный"],
-      ["red", "Красный"],
-      ["orange", "Оранжевый"],
-      ["amber", "Янтарный"],
-      ["yellow", "Жёлтый"],
-      ["lime", "Лаймовый"],
-      ["green", "Зелёный"],
-      ["emerald", "Изумрудный"],
-      ["teal", "Бирюзовый"],
-      ["cyan", "Голубой"],
-      ["sky", "Небесный"],
-      ["blue", "Синий"],
-      ["indigo", "Индиго"],
-      ["violet", "Фиолетовый"],
-      ["purple", "Пурпурный"],
-      ["fuchsia", "Фуксия"],
-      ["pink", "Розовый"],
-      ["rose", "Розовый коралл"],
+      ["slate", t("Серо-синий")],
+      ["gray", t("Серый")],
+      ["zinc", t("Цинковый")],
+      ["neutral", t("Нейтральный")],
+      ["stone", t("Каменный")],
+      ["red", t("Красный")],
+      ["orange", t("Оранжевый")],
+      ["amber", t("Янтарный")],
+      ["yellow", t("Жёлтый")],
+      ["lime", t("Лаймовый")],
+      ["green", t("Зелёный")],
+      ["emerald", t("Изумрудный")],
+      ["teal", t("Бирюзовый")],
+      ["cyan", t("Голубой")],
+      ["sky", t("Небесный")],
+      ["blue", t("Синий")],
+      ["indigo", t("Индиго")],
+      ["violet", t("Фиолетовый")],
+      ["purple", t("Пурпурный")],
+      ["fuchsia", t("Фуксия")],
+      ["pink", t("Розовый")],
+      ["rose", t("Розовый коралл")],
     ];
   return null;
 }
 
 function advancedFieldDialog(name, value) {
   openDialog(
-    "Дополнительные настройки поля",
+    t("Дополнительные настройки поля"),
     (labels[name]?.[0] || name) +
       " · " +
       name +
-      ". Обычно способ ввода определяется автоматически.",
+      t(". Обычно способ ввода определяется автоматически."),
   );
   const kind = field(
-    "Как задавать значение",
+    t("Как задавать значение"),
     select([
-      ["!!str", "Текст или адрес"],
-      ["!!bool", "Переключатель: включено / выключено"],
-      ["!!int", "Число без дробной части"],
-      ["!!float", "Число с дробной частью"],
-      ["!!null", "Не задавать значение (по умолчанию)"],
+      ["!!str", t("Текст или адрес")],
+      ["!!bool", t("Переключатель: включено / выключено")],
+      ["!!int", t("Число без дробной части")],
+      ["!!float", t("Число с дробной частью")],
+      ["!!null", t("Не задавать значение (по умолчанию)")],
     ]),
   );
   kind.value = value.Tag || "!!str";
   $("dialog-actions").append(
-    button("Отмена", "secondary", () => $("dialog").close()),
-    button("Применить", "primary", () => {
+    button(t("Отмена"), "secondary", () => $("dialog").close()),
+    button(t("Применить"), "primary", () => {
       if (kind.value !== value.Tag) {
         const previous = value.Value;
         value.Tag = kind.value;
@@ -1393,7 +1550,7 @@ function duplicateBlock(parent, index, name, value) {
     if (copy) blockOpenStates.set(copy, false);
     mark();
     renderTree();
-    toast("Копия добавлена в черновик. Сохраните изменения.");
+    toast(t("Копия добавлена в черновик. Сохраните изменения."));
   };
   if (parent.Kind === 2) {
     const copy = cloneBlockNode(parent.Content[index]);
@@ -1411,9 +1568,9 @@ function duplicateBlock(parent, index, name, value) {
             : [],
         ),
       );
-      let next = name + " (копия)",
+      let next = name + t(" (копия)"),
         i = 2;
-      while (names.has(next)) next = name + " (копия " + i++ + ")";
+      while (names.has(next)) next = name + t(" (копия ") + i++ + ")";
       copy.Content[0].Value = next;
     }
     parent.Content.splice(index + 1, 0, copy);
@@ -1435,19 +1592,21 @@ function duplicateBlock(parent, index, name, value) {
     return;
   }
   openDialog(
-    "Копировать блок",
-    "Укажите новое имя группы или параметра. Все вложенные настройки будут скопированы.",
+    t("Копировать блок"),
+    t(
+      "Укажите новое имя группы или параметра. Все вложенные настройки будут скопированы.",
+    ),
   );
-  const title = field("Название копии", make("input"));
-  let next = name + " (копия)",
+  const title = field(t("Название копии"), make("input"));
+  let next = name + t(" (копия)"),
     i = 2;
-  while (mapValue(parent, next)) next = name + " (копия " + i++ + ")";
+  while (mapValue(parent, next)) next = name + t(" (копия ") + i++ + ")";
   title.value = next;
   $("dialog-actions").append(
-    button("Создать копию", "primary", () => {
+    button(t("Создать копию"), "primary", () => {
       const next = title.value.trim();
       if (!next || mapValue(parent, next)) {
-        toast("Укажите уникальное название");
+        toast(t("Укажите уникальное название"));
         return;
       }
       const copy = cloneBlockNode(value),
@@ -1464,7 +1623,7 @@ function duplicateBlock(parent, index, name, value) {
 function renderEntry(parent, index, name, value, container, depth, key) {
   const source = { parent, index, name, value };
   const remove = () => {
-    if (!confirm("Удалить «" + name + "»?")) return;
+    if (!confirm(t("Удалить «") + name + "»?")) return;
     parent.Content.splice(index, parent.Kind === 4 ? 2 : 1);
     mark();
     renderTree();
@@ -1483,7 +1642,7 @@ function renderEntry(parent, index, name, value, container, depth, key) {
           "group-meta",
           (value.Content?.length / (value.Kind === 4 ? 2 : 1) || 0) +
             " " +
-            (value.Kind === 4 ? "полей" : "элементов"),
+            (value.Kind === 4 ? t("полей") : t("элементов")),
         ),
       );
     const actions = make("span", "group-actions");
@@ -1493,7 +1652,7 @@ function renderEntry(parent, index, name, value, container, depth, key) {
       ev.stopPropagation();
       duplicateBlock(parent, index, name, value);
     });
-    duplicate.title = "Создать копию «" + name + "»";
+    duplicate.title = t("Создать копию «") + name + "»";
     duplicate.setAttribute("aria-label", duplicate.title);
     actions.append(duplicate);
     const context = blockContext(value);
@@ -1502,10 +1661,10 @@ function renderEntry(parent, index, name, value, container, depth, key) {
         "span",
         "block-role",
         {
-          group: "Группа",
-          service: "Сервис",
-          widget: "Виджет",
-          widgets: "Виджеты",
+          group: t("Группа"),
+          service: t("Сервис"),
+          widget: t("Виджет"),
+          widgets: t("Виджеты"),
         }[context.kind],
       );
       summary.insertBefore(role, summary.querySelector(".group-meta"));
@@ -1516,12 +1675,12 @@ function renderEntry(parent, index, name, value, container, depth, key) {
       });
       add.title =
         context.kind === "group"
-          ? "Добавить сервис в эту группу"
+          ? t("Добавить сервис в эту группу")
           : context.kind === "widgets"
-            ? "Добавить виджет в этот сервис"
+            ? t("Добавить виджет в этот сервис")
             : context.kind === "widget"
-              ? "Настроить этот виджет"
-              : "Добавить параметры сервиса";
+              ? t("Настроить этот виджет")
+              : t("Добавить параметры сервиса");
       add.setAttribute("aria-label", add.title);
       actions.append(add);
     }
@@ -1553,24 +1712,32 @@ function renderEntry(parent, index, name, value, container, depth, key) {
     (grafana
       ? {
           username: [
-            "Пользователь Grafana",
-            "Логин пользователя с правами серверного администратора. Это не имя service account.",
+            t("Пользователь Grafana"),
+            t(
+              "Логин пользователя с правами серверного администратора. Это не имя service account.",
+            ),
           ],
           password: [
-            "Пароль пользователя Grafana",
-            "Для /api/admin/stats нужен пароль пользователя; токен service account не поддерживается.",
+            t("Пароль пользователя Grafana"),
+            t(
+              "Для /api/admin/stats нужен пароль пользователя; токен service account не поддерживается.",
+            ),
           ],
           alerts: [
-            "Источник оповещений",
-            "Обычно встроенный Grafana. Внешний источник выбирайте только если он настроен.",
+            t("Источник оповещений"),
+            t(
+              "Обычно встроенный Grafana. Внешний источник выбирайте только если он настроен.",
+            ),
           ],
           version: [
-            "Совместимость виджета",
-            "Версия 2 — для Grafana новее 10.4, включая 12.x.",
+            t("Совместимость виджета"),
+            t("Версия 2 — для Grafana новее 10.4, включая 12.x."),
           ],
           url: [
-            "Адрес Grafana",
-            "Полный адрес с http:// или https://, например http://192.168.2.2:3000",
+            t("Адрес Grafana"),
+            t(
+              "Полный адрес с http:// или https://, например http://192.168.2.2:3000",
+            ),
           ],
         }[name]
       : null) || labels[name];
@@ -1582,7 +1749,7 @@ function renderEntry(parent, index, name, value, container, depth, key) {
     make(
       "small",
       "",
-      caption ? caption[1] : value.HeadComment || "Параметр конфигурации",
+      caption ? caption[1] : value.HeadComment || t("Параметр конфигурации"),
     ),
   );
   const control = make("div", "field-input");
@@ -1591,7 +1758,9 @@ function renderEntry(parent, index, name, value, container, depth, key) {
       make(
         "span",
         "hint",
-        "Ссылка на YAML-якорь: *" + value.Value + " · редактируется в YAML",
+        t("Ссылка на YAML-якорь: *") +
+          value.Value +
+          t(" · редактируется в YAML"),
       ),
     );
   } else {
@@ -1600,7 +1769,10 @@ function renderEntry(parent, index, name, value, container, depth, key) {
       secret = /key|token|secret|password|authorization/i.test(name);
     const choices =
       (value.Tag === "!!str" ||
-        (grafana && name === "version" && value.Tag === "!!int")) &&
+        (grafana && name === "version" && value.Tag === "!!int") ||
+        (isLayoutGroup(parent) &&
+          name === "columns" &&
+          value.Tag === "!!int")) &&
       !multiline
         ? fieldChoices(name, parent)
         : null;
@@ -1611,7 +1783,15 @@ function renderEntry(parent, index, name, value, container, depth, key) {
     input.spellcheck = false;
     if (choices) {
       if (!choices.some(([v]) => v === value.Value)) {
-        const custom = make("option", "", "Другое: " + value.Value);
+        const custom = make(
+          "option",
+          "",
+          (isLayoutGroup(parent) &&
+          ["style", "columns"].includes(name) &&
+          !value.Value.includes("{{")
+            ? t("Неподдерживаемое значение: ")
+            : t("Другое: ")) + value.Value,
+        );
         custom.value = value.Value;
         input.append(custom);
       }
@@ -1646,28 +1826,38 @@ function renderEntry(parent, index, name, value, container, depth, key) {
       }
       if (value.Tag === "!!null") {
         input.disabled = true;
-        input.placeholder = "По умолчанию";
+        input.placeholder = t("По умолчанию");
       }
     }
     input.addEventListener("input", () => {
       value.Value = bool ? String(input.checked) : input.value;
+      if (
+        isLayoutGroup(parent) &&
+        name === "columns" &&
+        choices?.some(([v]) => v === input.value)
+      )
+        value.Tag = "!!int";
       value.Style = 0;
       if (bool) {
         input.setAttribute("aria-checked", String(input.checked));
         control.querySelector(".switch-state").textContent = input.checked
-          ? "Включено"
-          : "Выключено";
+          ? t("Включено")
+          : t("Выключено");
       }
       mark();
     });
     control.append(input);
     if (bool)
       control.append(
-        make("span", "switch-state", input.checked ? "Включено" : "Выключено"),
+        make(
+          "span",
+          "switch-state",
+          input.checked ? t("Включено") : t("Выключено"),
+        ),
       );
     if (value.Tag === "!!null")
       control.append(
-        button("Задать", "soft-button", () => {
+        button(t("Задать"), "soft-button", () => {
           const initial =
             parent === root() && Object.hasOwn(settingDefaults, name)
               ? node(structuredClone(settingDefaults[name]))
@@ -1689,7 +1879,7 @@ function renderEntry(parent, index, name, value, container, depth, key) {
     const extra = button("⋯", "field-more", () =>
       advancedFieldDialog(name, value),
     );
-    extra.title = "Дополнительные настройки: " + name;
+    extra.title = t("Дополнительные настройки: ") + name;
     extra.setAttribute("aria-label", extra.title);
     rowActions.append(extra);
   }
@@ -1697,7 +1887,7 @@ function renderEntry(parent, index, name, value, container, depth, key) {
     const upload = button("▧", "icon-upload-button", () =>
       imageImportDialog({ iconMode: true, target: parent }),
     );
-    upload.title = "Выбрать иконку: ссылка, файл или сторонняя база";
+    upload.title = t("Выбрать иконку: ссылка, файл или сторонняя база");
     upload.setAttribute("aria-label", upload.title);
     control.append(upload);
   }
@@ -1751,19 +1941,19 @@ function select(options) {
 }
 function addDialog(parent) {
   openDialog(
-    parent.Kind === 4 ? "Добавить параметр" : "Добавить элемент",
-    "Любые поля Homepage доступны через вложенные объекты и списки.",
+    parent.Kind === 4 ? t("Добавить параметр") : t("Добавить элемент"),
+    t("Любые поля Homepage доступны через вложенные объекты и списки."),
   );
   let name;
   if (parent.Kind === 4) {
     name = field(
-      "Имя параметра",
+      t("Имя параметра"),
       make("input"),
       current.name === "settings.yaml"
-        ? "Выберите известный параметр или введите своё имя."
-        : "Имя поля в конфигурации Homepage",
+        ? t("Выберите известный параметр или введите своё имя.")
+        : t("Имя поля в конфигурации Homepage"),
     );
-    name.placeholder = "Например: title";
+    name.placeholder = t("Например: title");
     if (parent === root() && current.name === "settings.yaml") {
       name.setAttribute("list", "settings-keys");
       const list = make("datalist");
@@ -1777,38 +1967,38 @@ function addDialog(parent) {
     }
   }
   const type = field(
-    "Как задавать значение",
+    t("Как задавать значение"),
     select([
-      ["auto", "Определить автоматически"],
-      ["map", "Раздел с вложенными настройками"],
-      ["seq", "Список элементов"],
-      ["bool", "Переключатель"],
-      ["int", "Целое число"],
-      ["float", "Число"],
-      ["null", "Не задавать значение (по умолчанию)"],
+      ["auto", t("Определить автоматически")],
+      ["map", t("Раздел с вложенными настройками")],
+      ["seq", t("Список элементов")],
+      ["bool", t("Переключатель")],
+      ["int", t("Целое число")],
+      ["float", t("Число")],
+      ["null", t("Не задавать значение (по умолчанию)")],
     ]),
   );
   const advanced = make("details", "advanced-options");
   advanced.append(
-    make("summary", "", "Дополнительные настройки"),
+    make("summary", "", t("Дополнительные настройки")),
     type.parentElement,
   );
   $("dialog-body").append(advanced);
   const value = field(
-    "Значение",
+    t("Значение"),
     make("input"),
-    "Для объекта и списка поля можно добавить после создания.",
+    t("Для объекта и списка поля можно добавить после создания."),
   );
-  value.placeholder = "Значение параметра";
+  value.placeholder = t("Значение параметра");
   $("dialog-actions").append(
-    button("Отмена", "secondary", () => $("dialog").close()),
-    button("Добавить", "primary", () => {
+    button(t("Отмена"), "secondary", () => $("dialog").close()),
+    button(t("Добавить"), "primary", () => {
       const k = name?.value.trim();
       if (
         parent.Kind === 4 &&
         (!k || parent.Content.some((n, i) => i % 2 === 0 && n.Value === k))
       ) {
-        toast("Укажите уникальное имя параметра");
+        toast(t("Укажите уникальное имя параметра"));
         return;
       }
       let v;
@@ -1822,7 +2012,7 @@ function addDialog(parent) {
           !Number.isFinite(n) ||
           (type.value === "int" && !Number.isInteger(n))
         ) {
-          toast("Введите корректное число");
+          toast(t("Введите корректное число"));
           return;
         }
         v = node(n);
@@ -1846,11 +2036,14 @@ function addDialog(parent) {
   name?.focus();
 }
 function renameDialog(key) {
-  openDialog("Переименовать", "Название группы или параметра в конфигурации.");
-  const input = field("Название", make("input"));
+  openDialog(
+    t("Переименовать"),
+    t("Название группы или параметра в конфигурации."),
+  );
+  const input = field(t("Название"), make("input"));
   input.value = key.Value;
   $("dialog-actions").append(
-    button("Применить", "primary", () => {
+    button(t("Применить"), "primary", () => {
       if (!input.value.trim()) return;
       key.Value = input.value.trim();
       mark();
@@ -1861,8 +2054,8 @@ function renameDialog(key) {
 }
 function templates(parent) {
   openDialog(
-    "Добавить из шаблона",
-    "Шаблон — отправная точка. Измените адреса и ключи перед сохранением.",
+    t("Добавить из шаблона"),
+    t("Шаблон — отправная точка. Измените адреса и ключи перед сохранением."),
   );
   const grid = make("div", "template-grid");
   for (const [title, description, data] of presets[current.name] || []) {
@@ -1875,7 +2068,9 @@ function templates(parent) {
           parent.Content.some((x, i) => i % 2 === 0 && x.Value === k.Value),
         );
         if (collisions.length) {
-          toast("Уже есть поля: " + collisions.map((k) => k.Value).join(", "));
+          toast(
+            t("Уже есть поля: ") + collisions.map((k) => k.Value).join(", "),
+          );
           return;
         }
         parent.Content.push(...n.Content);
@@ -1889,13 +2084,13 @@ function templates(parent) {
   }
   if (libraryEntries().length)
     grid.append(
-      button("Весь каталог Homepage →", "template-card", () => {
+      button(t("Весь каталог Homepage →"), "template-card", () => {
         $("dialog").close();
         library();
       }),
     );
   grid.append(
-    button("Пустой объект / своё поле", "template-card", () => {
+    button(t("Пустой объект / своё поле"), "template-card", () => {
       $("dialog").close();
       addDialog(parent);
     }),
@@ -1918,11 +2113,11 @@ function libraryEntries() {
 function library({ serviceTarget = null, destinationGroup = null } = {}) {
   const entries = libraryEntries();
   openDialog(
-    "Каталог Homepage",
+    t("Каталог Homepage"),
     entries.length +
-      " примеров из официальной документации · снимок " +
+      t(" примеров из официальной документации · снимок ") +
       catalog.snapshot +
-      ". Параметры можно изменить после добавления.",
+      t(". Параметры можно изменить после добавления."),
   );
   let group, service, attachMode;
   if (current.name === "services.yaml") {
@@ -1932,37 +2127,49 @@ function library({ serviceTarget = null, destinationGroup = null } = {}) {
         mapValue(serviceTarget, "widgets")
       ) {
         attachMode = field(
-          "Что сделать",
+          t("Что сделать"),
           select([
-            ["append", "Добавить ещё один виджет, сохранив текущий"],
-            ["replace", "Заменить существующие виджеты"],
+            ["append", t("Добавить ещё один виджет, сохранив текущий")],
+            ["replace", t("Заменить существующие виджеты")],
           ]),
         );
         attachMode.id = "widget-attach-mode";
       }
-      $("dialog-description").textContent =
-        "Выберите интеграцию для текущего сервиса. Её параметры появятся внутри карточки; адрес, иконка и мониторинг сохранятся.";
+      $("dialog-description").textContent = t(
+        "Выберите интеграцию для текущего сервиса. Её параметры появятся внутри карточки; адрес, иконка и мониторинг сохранятся.",
+      );
     } else {
       if (!destinationGroup) {
-        group = field("Группа сервисов", make("input"));
-        group.value = "Сервисы";
+        group = field(t("Группа сервисов"), make("input"));
+        group.value = t("Сервисы");
       } else
-        $("dialog-description").textContent =
-          "Сервис будет добавлен в выбранную группу. Укажите название и выберите интеграцию.";
+        $("dialog-description").textContent = t(
+          "Сервис будет добавлен в выбранную группу. Укажите название и выберите интеграцию.",
+        );
       service = field(
-        "Название сервиса",
+        t("Название сервиса"),
         make("input"),
-        "Оставьте пустым, чтобы использовать название интеграции.",
+        t("Оставьте пустым, чтобы использовать название интеграции."),
       );
-      service.placeholder = "Название интеграции";
+      service.placeholder = t("Название интеграции");
     }
   }
-  const search = field("Найти интеграцию или параметр", make("input"));
+  const search = field(t("Найти интеграцию или параметр"), make("input"));
   search.type = "search";
   search.placeholder = "Jellyfin, Proxmox, layout…";
   const grid = make("div", "template-grid");
-  for (const entry of entries) {
+  const groups = new Map();
+  for (const item of entries) {
+    const key = item.slug;
+    if (!groups.has(key)) groups.set(key, []);
+    const variants = groups.get(key);
+    if (!variants.some((variant) => variant.example === item.example))
+      variants.push(item);
+  }
+  for (const variants of groups.values()) {
+    let entry = variants[0];
     const wrap = make("div", "library-entry");
+    wrap.dataset.catalogKey = entry.slug;
     const b = button("", "template-card", () => {
       const n = structuredClone(entry.tree.Content[0]),
         r = root();
@@ -1971,7 +2178,7 @@ function library({ serviceTarget = null, destinationGroup = null } = {}) {
         if (serviceTarget) {
           const widget = mapValue(n, "widget");
           if (!widget) {
-            toast("В этом шаблоне нет настроек виджета");
+            toast(t("В этом шаблоне нет настроек виджета"));
             return;
           }
           if (
@@ -1988,14 +2195,16 @@ function library({ serviceTarget = null, destinationGroup = null } = {}) {
           $("dialog").close();
           renderTree();
           toast(
-            "Виджет добавлен в сервис. Укажите адрес и ключи, затем сохраните изменения.",
+            t(
+              "Виджет добавлен в сервис. Укажите адрес и ключи, затем сохраните изменения.",
+            ),
           );
           return;
         }
         const groupName = destinationGroup ? "" : group.value.trim(),
           serviceName = service.value.trim() || entry.title;
         if (!destinationGroup && !groupName) {
-          toast("Укажите название группы");
+          toast(t("Укажите название группы"));
           return;
         }
         let target = destinationGroup;
@@ -2014,7 +2223,7 @@ function library({ serviceTarget = null, destinationGroup = null } = {}) {
         if (
           target?.Content?.some((x) => x.Content?.[0]?.Value === serviceName)
         ) {
-          toast("В этой группе уже есть сервис с таким названием");
+          toast(t("В этой группе уже есть сервис с таким названием"));
           return;
         }
         if (!target) {
@@ -2044,9 +2253,9 @@ function library({ serviceTarget = null, destinationGroup = null } = {}) {
         );
         if (collision) {
           toast(
-            "Поле " +
+            t("Поле ") +
               collision.Value +
-              " уже существует. Измените его в редакторе.",
+              t(" уже существует. Измените его в редакторе."),
           );
           return;
         }
@@ -2055,7 +2264,7 @@ function library({ serviceTarget = null, destinationGroup = null } = {}) {
       mark();
       $("dialog").close();
       renderTree();
-      toast("Шаблон добавлен. Укажите адреса и ключи своего сервиса.");
+      toast(t("Шаблон добавлен. Укажите адреса и ключи своего сервиса."));
     });
     if (current.name === "services.yaml") {
       const aliases = {
@@ -2072,13 +2281,63 @@ function library({ serviceTarget = null, destinationGroup = null } = {}) {
         ),
       );
     }
-    b.append(make("strong", "", entry.title), make("small", "", entry.slug));
-    const link = make("a", "library-doc", "Документация ↗");
+    const setting = current.name === "settings.yaml";
+    const label = setting ? labels[entry.slug] : null;
+    b.append(make("strong", "", label?.[0] || entry.title));
+    if (label?.[1]) b.append(make("small", "", label[1]));
+    else if (entry.slug !== entry.title)
+      b.append(make("small", "", entry.slug));
+    const link = make("a", "library-doc", t("Документация ↗"));
     link.href = entry.url;
     link.target = "_blank";
     link.rel = "noreferrer";
     wrap.append(b, link);
-    wrap.dataset.search = (entry.title + " " + entry.slug).toLowerCase();
+    const added = make("span", "catalog-added", t("Уже добавлено"));
+    wrap.insertBefore(added, link);
+    const updateAvailability = () => {
+      const template = entry.tree.Content[0];
+      const exists =
+        root().Kind === 4 &&
+        template.Kind === 4 &&
+        (template.Content || []).some(
+          (key, index) =>
+            index % 2 === 0 && Boolean(mapValue(root(), key.Value)),
+        );
+      b.disabled = exists;
+      added.classList.toggle("hidden", !exists);
+      wrap.classList.toggle("catalog-entry-added", exists);
+      b.title = exists
+        ? t("Параметр уже есть в конфигурации. Измените его в редакторе.")
+        : "";
+    };
+    updateAvailability();
+    if (variants.length > 1) {
+      const options = select(
+        variants.map((variant, index) => [
+          String(index),
+          t("Вариант {0}", index + 1),
+        ]),
+      );
+      options.setAttribute("aria-label", t("Вариант шаблона"));
+      const preview = make("pre", "catalog-example", entry.example);
+      options.addEventListener("change", () => {
+        entry = variants[Number(options.value)];
+        preview.textContent = entry.example;
+        link.href = entry.url;
+        updateAvailability();
+      });
+      wrap.insertBefore(options, link);
+      wrap.insertBefore(preview, link);
+    }
+    wrap.dataset.search = (
+      entry.title +
+      " " +
+      entry.slug +
+      " " +
+      (label || []).join(" ")
+    )
+      .trim()
+      .toLowerCase();
     grid.append(wrap);
   }
   search.addEventListener("input", () => {
@@ -2107,8 +2366,8 @@ function validateVisualFields() {
     invalid.focus();
     throw Error(
       (invalid.type === "url"
-        ? "Укажите полный URL с http:// или https:// в поле «"
-        : "Укажите корректное число в поле «") +
+        ? t("Укажите полный URL с http:// или https:// в поле «")
+        : t("Укажите корректное число в поле «")) +
         invalid.closest(".field-row").querySelector(".field-label strong")
           .textContent +
         "».",
@@ -2155,22 +2414,22 @@ async function save() {
     install(d);
     mode = previousMode;
     renderMode();
-    toast("Сохранено. Обновите страницу Homepage, чтобы увидеть изменения.");
+    toast(t("Сохранено. Обновите страницу Homepage, чтобы увидеть изменения."));
   });
 }
 async function review() {
   await run(async () => {
     const raw = await serialized();
     openDialog(
-      "Изменения перед сохранением",
-      current.name + " · данные на диске и текущая версия",
+      t("Изменения перед сохранением"),
+      current.name + t(" · данные на диске и текущая версия"),
     );
     const diff = make("div", "diff");
     const oldLines = original.split("\n"),
       newLines = raw.split("\n");
     for (const [title, lines, other, cls] of [
-      ["На диске", oldLines, newLines, "removed"],
-      ["После сохранения", newLines, oldLines, "added"],
+      [t("На диске"), oldLines, newLines, "removed"],
+      [t("После сохранения"), newLines, oldLines, "added"],
     ]) {
       const column = make("div");
       column.append(make("h4", "", title));
@@ -2184,12 +2443,12 @@ async function review() {
     $("dialog-body").append(diff);
     if (pendingAppearanceCSS) {
       $("dialog-body").append(
-        make("h4", "", "Изменения оформления · custom.css"),
+        make("h4", "", t("Изменения оформления · custom.css")),
       );
       const cssDiff = make("div", "diff");
       for (const [title, raw] of [
-        ["На диске", pendingAppearanceCSS.original],
-        ["После сохранения", pendingAppearanceCSS.raw],
+        [t("На диске"), pendingAppearanceCSS.original],
+        [t("После сохранения"), pendingAppearanceCSS.raw],
       ]) {
         const col = make("div");
         col.append(make("h4", "", title), make("pre", "", raw));
@@ -2198,10 +2457,10 @@ async function review() {
       $("dialog-body").append(cssDiff);
     }
     $("dialog-actions").append(
-      button("Продолжить редактирование", "secondary", () =>
+      button(t("Продолжить редактирование"), "secondary", () =>
         $("dialog").close(),
       ),
-      button("Сохранить изменения", "primary", () => {
+      button(t("Сохранить изменения"), "primary", () => {
         $("dialog").close();
         save();
       }),
@@ -2214,17 +2473,19 @@ async function openHistory() {
       "/api/history?name=" + encodeURIComponent(current.name),
     );
     openDialog(
-      "История изменений",
-      "Предыдущие версии " +
+      t("История изменений"),
+      t("Предыдущие версии ") +
         current.name +
-        ". Восстановление сначала загружает копию в редактор.",
+        t(". Восстановление сначала загружает копию в редактор."),
     );
     if (!entries.length)
       $("dialog-body").append(
         make(
           "p",
           "hint",
-          "Пока нет резервных копий. Они появятся после изменения существующего файла.",
+          t(
+            "Пока нет резервных копий. Они появятся после изменения существующего файла.",
+          ),
         ),
       );
     for (const entry of entries) {
@@ -2232,15 +2493,17 @@ async function openHistory() {
       const label = make(
         "div",
         "",
-        new Date(entry.time).toLocaleString("ru-RU"),
+        new Date(entry.time).toLocaleString(
+          panelLanguage === "en" ? "en-US" : "ru-RU",
+        ),
       );
-      label.append(make("small", "", entry.size + " байт"));
+      label.append(make("small", "", entry.size + t(" байт")));
       row.append(
         label,
-        button("Загрузить в редактор", "secondary", async () => {
+        button(t("Загрузить в редактор"), "secondary", async () => {
           if (
             dirty &&
-            !confirm("Заменить несохранённые изменения резервной копией?")
+            !confirm(t("Заменить несохранённые изменения резервной копией?"))
           )
             return;
           $("dialog").close();
@@ -2256,7 +2519,7 @@ async function openHistory() {
             mark();
             renderMode();
             toast(
-              "Копия в редакторе. Проверьте и сохраните для восстановления.",
+              t("Копия в редакторе. Проверьте и сохраните для восстановления."),
             );
           });
         }),
@@ -2286,12 +2549,13 @@ $("save").addEventListener("click", save);
 $("review").addEventListener("click", review);
 $("history").addEventListener("click", openHistory);
 $("reload").addEventListener("click", () => {
-  if (!dirty || confirm("Отменить изменения и загрузить файл с диска?"))
+  if (!dirty || confirm(t("Отменить изменения и загрузить файл с диска?")))
     load(current.name, true);
 });
 $("search").addEventListener("input", filter);
 $("add-root").addEventListener("click", () => {
-  if (current.name === "services.yaml") addServiceDialog();
+  if (["services.yaml", "bookmarks.yaml"].includes(current.name))
+    addServiceDialog();
   else if (current.name === "widgets.yaml") library();
   else if (root().Kind === 4) parameterDialog(root());
   else addDialog(root());
@@ -2311,21 +2575,23 @@ $("download").addEventListener("click", () =>
     a.download = current.name;
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-    toast("Конфигурация скачана");
+    toast(t("Конфигурация скачана"));
   }),
 );
 $("new-file").addEventListener("click", () => {
   openDialog(
-    "Дополнительный YAML",
-    "Создайте файл для подключаемой конфигурации. Homepage должен быть настроен на его использование отдельно.",
+    t("Дополнительный YAML"),
+    t(
+      "Создайте файл для подключаемой конфигурации. Homepage должен быть настроен на его использование отдельно.",
+    ),
   );
-  const name = field("Имя файла", make("input"));
+  const name = field(t("Имя файла"), make("input"));
   name.placeholder = "extra-services.yaml";
   $("dialog-actions").append(
-    button("Открыть файл", "primary", () => {
+    button(t("Открыть файл"), "primary", () => {
       const n = name.value.trim();
       if (!/^[\p{L}\p{N}_-][\p{L}\p{N}_. -]*\.ya?ml$/u.test(n)) {
-        toast("Введите имя файла с расширением .yaml или .yml");
+        toast(t("Введите имя файла с расширением .yaml или .yml"));
         return;
       }
       if (!names.includes(n)) names.push(n);
@@ -2381,8 +2647,8 @@ function findIconTargets(tree) {
 
 function externalIconURL(template, name) {
   if (!template.includes("{name}"))
-    throw Error("В шаблоне нужна подстановка {name}.");
-  if (!name.trim()) throw Error("Введите название логотипа.");
+    throw Error(t("В шаблоне нужна подстановка {name}."));
+  if (!name.trim()) throw Error(t("Введите название логотипа."));
   const url = new URL(
     template.replaceAll("{name}", encodeURIComponent(name.trim())),
   );
@@ -2391,9 +2657,9 @@ function externalIconURL(template, name) {
     url.username ||
     url.password
   )
-    throw Error("Нужна HTTP/HTTPS-ссылка без логина и пароля.");
+    throw Error(t("Нужна HTTP/HTTPS-ссылка без логина и пароля."));
   if (/[{}]/.test(url.href))
-    throw Error("Поддерживается только подстановка {name}.");
+    throw Error(t("Поддерживается только подстановка {name}."));
   return url.href;
 }
 
@@ -2439,10 +2705,10 @@ function logoMatches(name, pattern) {
 
 function storedIconGallery(onPick) {
   const section = make("section", "hidden logo-browser");
-  const search = field("Найти загруженную иконку", make("input"));
+  const search = field(t("Найти загруженную иконку"), make("input"));
   search.type = "search";
   search.id = "stored-icon-search";
-  const status = make("p", "hint", "Загрузка…");
+  const status = make("p", "hint", t("Загрузка…"));
   status.setAttribute("role", "status");
   const grid = make("div", "logo-grid");
   grid.id = "stored-icon-grid";
@@ -2450,8 +2716,10 @@ function storedIconGallery(onPick) {
     matches = [],
     shown = 0,
     request = 0;
-  const more = button("Показать ещё", "secondary hidden", append);
-  const refresh = button("Обновить список", "secondary", () => section.load());
+  const more = button(t("Показать ещё"), "secondary hidden", append);
+  const refresh = button(t("Обновить список"), "secondary", () =>
+    section.load(),
+  );
   refresh.id = "stored-icon-refresh";
   function append() {
     const end = Math.min(shown + 60, matches.length);
@@ -2473,8 +2741,14 @@ function storedIconGallery(onPick) {
     shown = end;
     more.classList.toggle("hidden", shown >= matches.length);
     status.textContent = items.length
-      ? `Показано ${shown} из ${matches.length}. Выберите иконку и нажмите «Применить иконку».`
-      : "В каталоге пока нет иконок. Загрузите их из галереи, по ссылке или с компьютера. Поддерживаются PNG, JPEG, WebP и GIF.";
+      ? t(
+          "Показано {0} из {1}. Выберите иконку и нажмите «Применить иконку».",
+          shown,
+          matches.length,
+        )
+      : t(
+          "В каталоге пока нет иконок. Загрузите их из галереи, по ссылке или с компьютера. Поддерживаются PNG, JPEG, WebP и GIF.",
+        );
   }
   function render() {
     matches = items.filter((item) =>
@@ -2488,7 +2762,7 @@ function storedIconGallery(onPick) {
   section.load = async () => {
     const id = ++request;
     refresh.disabled = true;
-    status.textContent = "Загрузка…";
+    status.textContent = t("Загрузка…");
     try {
       const data = await api("/api/icons/library");
       if (id !== request || !section.isConnected) return;
@@ -2496,7 +2770,7 @@ function storedIconGallery(onPick) {
       render();
     } catch (e) {
       if (id === request)
-        status.textContent = "Не удалось прочитать иконки: " + e.message;
+        status.textContent = t("Не удалось прочитать иконки: ") + e.message;
     } finally {
       if (id === request) refresh.disabled = false;
     }
@@ -2510,17 +2784,19 @@ function logoGallery(onPick) {
     entry?.format === "svg" || /\.svg(?:[?#]|$)/i.test(entry?.template || "");
   const section = make("section", "hidden logo-browser");
   section.id = "logo-gallery";
-  const source = field("Каталог иконок", select([]));
+  const source = field(t("Каталог иконок"), select([]));
   source.id = "gallery-source";
   const query = field(
-    "Имя или шаблон",
+    t("Имя или шаблон"),
     make("input"),
-    "grafana — содержит слово; grafana* — начинается с него; *grafana* — содержит; ? — один символ. Скачиваются все совпадения, включая ещё не показанные карточки.",
+    t(
+      "grafana — содержит слово; grafana* — начинается с него; *grafana* — содержит; ? — один символ. Скачиваются все совпадения, включая ещё не показанные карточки.",
+    ),
   );
   query.type = "search";
   query.id = "gallery-search";
   query.placeholder = "grafana, proxmox, unifi…";
-  const info = make("p", "hint", "Загрузка списка иконок…");
+  const info = make("p", "hint", t("Загрузка списка иконок…"));
   info.setAttribute("role", "status");
   const credit = make("a", "library-doc");
   credit.target = "_blank";
@@ -2536,11 +2812,11 @@ function logoGallery(onPick) {
   batchStatus.id = "logo-batch-status";
   batchStatus.setAttribute("role", "status");
   const batchResults = make("div", "logo-batch-results");
-  const stop = button("Остановить загрузку", "secondary hidden", () =>
+  const stop = button(t("Остановить загрузку"), "secondary hidden", () =>
     controller?.abort(),
   );
   stop.id = "logo-batch-stop";
-  const download = button("Скачать найденные", "secondary", async () => {
+  const download = button(t("Скачать найденные"), "secondary", async () => {
     if (
       downloading ||
       !matches.length ||
@@ -2568,7 +2844,12 @@ function logoGallery(onPick) {
     try {
       for (const name of names) {
         if (controller.signal.aborted) break;
-        batchStatus.textContent = `Загрузка ${succeeded + failed + 1} из ${names.length}: ${name}`;
+        batchStatus.textContent = t(
+          "Загрузка {0} из {1}: {2}",
+          succeeded + failed + 1,
+          names.length,
+          name,
+        );
         const row = make("p");
         try {
           const result = await api("/api/images/import", {
@@ -2596,7 +2877,15 @@ function logoGallery(onPick) {
         batchResults.append(row);
       }
     } finally {
-      batchStatus.textContent = `${controller.signal.aborted ? "Загрузка остановлена." : "Загрузка завершена."} Сохранено: ${succeeded}; ошибок: ${failed}; всего совпадений: ${names.length}. Конфигурация сервисов не изменялась.`;
+      batchStatus.textContent = t(
+        "{0} Сохранено: {1}; ошибок: {2}; всего совпадений: {3}. Конфигурация сервисов не изменялась.",
+        controller.signal.aborted
+          ? t("Загрузка остановлена.")
+          : t("Загрузка завершена."),
+        succeeded,
+        failed,
+        names.length,
+      );
       downloading = false;
       controls.forEach((el) => (el.disabled = false));
       stop.classList.add("hidden");
@@ -2606,7 +2895,7 @@ function logoGallery(onPick) {
     }
   });
   download.id = "logo-batch-download";
-  const more = button("Показать ещё", "secondary hidden", () => append());
+  const more = button(t("Показать ещё"), "secondary hidden", () => append());
   function append() {
     const entry = sources[Number(source.value)];
     if (!entry) return;
@@ -2621,32 +2910,35 @@ function logoGallery(onPick) {
       const remote = usesSVG(entry);
       const card = button("", "logo-card", () => onPick(url, remote));
       card.title =
-        (remote ? "Применить SVG по ссылке: " : "Выбрать и загрузить: ") + name;
+        (remote ? t("Применить SVG по ссылке: ") : t("Выбрать и загрузить: ")) +
+        name;
       card.append(logoThumbnail(name, url), make("span", "", name));
       grid.append(card);
     }
     shown = end;
     more.classList.toggle("hidden", shown >= matches.length);
     info.textContent =
-      `Показано ${shown} из ${matches.length}. ` +
+      t("Показано {0} из {1}. ", shown, matches.length) +
       (usesSVG(entry)
-        ? "SVG применяется как внешняя ссылка. Локальная конвертация и массовое скачивание SVG пока недоступны."
-        : "Нажмите на иконку для загрузки на сервер.");
+        ? t(
+            "SVG применяется как внешняя ссылка. Локальная конвертация и массовое скачивание SVG пока недоступны.",
+          )
+        : t("Нажмите на иконку для загрузки на сервер."));
   }
   function render() {
     grid.replaceChildren();
     shown = 0;
     const entry = sources[Number(source.value)];
     matches = (entry?.names || []).filter((n) => logoMatches(n, query.value));
-    download.textContent = `Скачать найденные (${matches.length})`;
+    download.textContent = t("Скачать найденные ({0})", matches.length);
     download.disabled = !matches.length || downloading || usesSVG(entry);
     download.classList.toggle("hidden", usesSVG(entry));
     credit.textContent = entry?.repository
-      ? "Источник и лицензия: " +
+      ? t("Источник и лицензия: ") +
         entry.name +
         (entry.license ? " · " + entry.license : "") +
         " ↗"
-      : "Своя база";
+      : t("Своя база");
     credit.href = entry?.repository || "#";
     credit.classList.toggle("hidden", !entry?.repository);
     append();
@@ -2661,7 +2953,9 @@ function logoGallery(onPick) {
     make(
       "p",
       "hint",
-      "Массовая загрузка сохраняет PNG 256 × 256 в каталог иконок на сервере. Пути появятся ниже; сервисы не меняются. Для своей базы нужен список имён.",
+      t(
+        "Массовая загрузка сохраняет PNG 256 × 256 в каталог иконок на сервере. Пути появятся ниже; сервисы не меняются. Для своей базы нужен список имён.",
+      ),
     ),
     download,
     stop,
@@ -2683,7 +2977,7 @@ function logoGallery(onPick) {
             "option",
             "",
             s.name +
-              ` (${s.names.length} · ${usesSVG(s) ? "SVG-ссылка" : "загрузка PNG"})`,
+              ` (${s.names.length} · ${usesSVG(s) ? t("SVG-ссылка") : t("загрузка PNG")})`,
           );
           option.value = String(i);
           return option;
@@ -2692,7 +2986,7 @@ function logoGallery(onPick) {
       loaded = true;
       render();
     } catch (e) {
-      info.textContent = "Не удалось открыть каталог: " + e.message;
+      info.textContent = t("Не удалось открыть каталог: ") + e.message;
     }
   };
   return section;
@@ -2720,40 +3014,44 @@ async function imageImportDialog({ iconMode = false, target = null } = {}) {
     const config = await api(iconMode ? "/api/icons" : "/api/images");
     const targets = iconMode
       ? target
-        ? [{ name: "Текущее поле icon", target }]
+        ? [{ name: t("Текущее поле icon"), target }]
         : findIconTargets(tree)
       : [];
     if (iconMode && !targets.length)
       throw Error(
-        "Сначала добавьте сервис или закладку, для которых нужна иконка.",
+        t("Сначала добавьте сервис или закладку, для которых нужна иконка."),
       );
     openDialog(
-      iconMode ? "Загрузить иконку" : "Загрузить фон по ссылке",
-      "Изображение будет сохранено локально. Применение добавит путь в черновик — затем сохраните изменения.",
+      iconMode ? t("Загрузить иконку") : t("Загрузить фон по ссылке"),
+      t(
+        "Изображение будет сохранено локально. Применение добавит путь в черновик — затем сохраните изменения.",
+      ),
     );
     const destination = iconMode
       ? field(
-          "Сервис или закладка",
+          t("Сервис или закладка"),
           select(targets.map((t, i) => [String(i), t.name])),
         )
       : null;
     if (destination) destination.id = "icon-destination";
     const source = iconMode
       ? field(
-          "Источник",
+          t("Источник"),
           select([
-            ["url", "По ссылке"],
-            ["gallery", "Галерея иконок — выбрать и загрузить"],
-            ["stored", "Загруженные иконки"],
-            ["file", "Файл с компьютера"],
+            ["url", t("По ссылке")],
+            ["gallery", t("Галерея иконок — выбрать и загрузить")],
+            ["stored", t("Загруженные иконки")],
+            ["file", t("Файл с компьютера")],
           ]),
         )
       : null;
     if (source) source.id = "icon-source";
     const urlInput = field(
-      "Ссылка на изображение",
+      t("Ссылка на изображение"),
       make("input"),
-      "Публичная HTTP/HTTPS-ссылка на JPEG, PNG, GIF или WebP; до 20 MiB и 16 Мп.",
+      t(
+        "Публичная HTTP/HTTPS-ссылка на JPEG, PNG, GIF или WebP; до 20 MiB и 16 Мп.",
+      ),
     );
     urlInput.type = "url";
     urlInput.placeholder = iconMode
@@ -2762,9 +3060,11 @@ async function imageImportDialog({ iconMode = false, target = null } = {}) {
     urlInput.id = kind + "-url";
     const file = iconMode
       ? field(
-          "Файл изображения",
+          t("Файл изображения"),
           make("input"),
-          "JPEG, PNG, GIF или WebP; до 20 MiB. SVG, ICO и AVIF пока не поддерживаются.",
+          t(
+            "JPEG, PNG, GIF или WebP; до 20 MiB. SVG, ICO и AVIF пока не поддерживаются.",
+          ),
         )
       : null;
     if (file) {
@@ -2781,16 +3081,16 @@ async function imageImportDialog({ iconMode = false, target = null } = {}) {
       file.parentElement.classList.toggle("hidden", source.value !== "file");
     });
     const format = field(
-      "Формат результата",
+      t("Формат результата"),
       select([
-        ["webp", "WebP — без потерь"],
-        ["jpeg", "JPEG — для фотографий"],
-        ["png", "PNG — без потерь, с прозрачностью"],
+        ["webp", t("WebP — без потерь")],
+        ["jpeg", t("JPEG — для фотографий")],
+        ["png", t("PNG — без потерь, с прозрачностью")],
       ]),
     );
     format.id = kind + "-format";
     if (iconMode) format.value = "png";
-    const quality = field("Качество JPEG (1–100)", make("input"));
+    const quality = field(t("Качество JPEG (1–100)"), make("input"));
     quality.id = kind + "-quality";
     quality.type = "number";
     quality.min = "1";
@@ -2801,16 +3101,18 @@ async function imageImportDialog({ iconMode = false, target = null } = {}) {
     };
     toggleQuality();
     format.addEventListener("change", toggleQuality);
-    const width = field("Максимальная ширина, px", make("input"));
+    const width = field(t("Максимальная ширина, px"), make("input"));
     width.id = kind + "-width";
     width.type = "number";
     width.min = "0";
     width.max = "8192";
     width.value = iconMode ? "256" : "2560";
     const height = field(
-      "Максимальная высота, px",
+      t("Максимальная высота, px"),
       make("input"),
-      "Пропорции сохраняются, маленькие изображения не увеличиваются. 0 — без ограничения. GIF превращается в статичный первый кадр; SVG и AVIF не поддерживаются.",
+      t(
+        "Пропорции сохраняются, маленькие изображения не увеличиваются. 0 — без ограничения. GIF превращается в статичный первый кадр; SVG и AVIF не поддерживаются.",
+      ),
     );
     height.id = kind + "-height";
     height.type = "number";
@@ -2820,15 +3122,17 @@ async function imageImportDialog({ iconMode = false, target = null } = {}) {
     const storage = make(
       "p",
       "hint",
-      "Каталог: " +
+      t("Каталог: ") +
         config.directory +
-        ". Этот каталог должен быть доступен Homepage как public/" +
+        t(". Этот каталог должен быть доступен Homepage как public/") +
         (iconMode ? "icons" : "images") +
         " (URL: " +
         config.urlPrefix +
-        "). В Docker смонтируйте его в /app/public/" +
+        t("). В Docker смонтируйте его в /app/public/") +
         (iconMode ? "icons" : "images") +
-        ". После добавления нового файла может потребоваться перезапуск Homepage.",
+        t(
+          ". После добавления нового файла может потребоваться перезапуск Homepage.",
+        ),
     );
     $("dialog-body").append(storage);
     const error = make("p", "error hidden");
@@ -2841,7 +3145,7 @@ async function imageImportDialog({ iconMode = false, target = null } = {}) {
     $("dialog").addEventListener("close", cancel, { once: true });
     let imported;
     const apply = button(
-      iconMode ? "Применить иконку" : "Применить фон",
+      iconMode ? t("Применить иконку") : t("Применить фон"),
       "primary hidden",
       () => {
         if (iconMode) {
@@ -2895,8 +3199,9 @@ async function imageImportDialog({ iconMode = false, target = null } = {}) {
             background.Style = 0;
           } else {
             error.textContent =
-              "Фон использует YAML-якорь или неподдерживаемый тип. Измените background вручную на " +
-              imported.path;
+              t(
+                "Фон использует YAML-якорь или неподдерживаемый тип. Измените background вручную на ",
+              ) + imported.path;
             error.classList.remove("hidden");
             return;
           }
@@ -2908,107 +3213,112 @@ async function imageImportDialog({ iconMode = false, target = null } = {}) {
         renderMode();
         $("dialog").close();
         toast(
-          (iconMode ? "Иконка добавлена" : "Фон добавлен") +
-            " в черновик. Нажмите «Сохранить изменения».",
+          (iconMode ? t("Иконка добавлена") : t("Фон добавлен")) +
+            t(" в черновик. Нажмите «Сохранить изменения»."),
         );
       },
     );
-    const submit = button("Загрузить и конвертировать", "primary", async () => {
-      if (
-        (source?.value !== "file" &&
-          (!urlInput.value.trim() || !urlInput.checkValidity())) ||
-        (source?.value === "file" &&
-          (!file.files[0] || file.files[0].size > 20 * 1024 * 1024)) ||
-        !width.checkValidity() ||
-        !height.checkValidity() ||
-        (format.value === "jpeg" && !quality.checkValidity())
-      ) {
-        error.textContent =
-          "Проверьте источник (ссылка или файл до 20 MiB), качество и размеры изображения.";
-        error.classList.remove("hidden");
-        return;
-      }
-      error.classList.add("hidden");
-      result.classList.add("hidden");
-      apply.classList.add("hidden");
-      submit.disabled = true;
-      submit.textContent = "Загрузка и конвертация…";
-      const fields = [
-        urlInput,
-        format,
-        quality,
-        width,
-        height,
-        ...(file ? [file, source] : []),
-      ];
-      fields.forEach((el) => {
-        el.disabled = true;
-      });
-      try {
-        const parameters = {
-          format: format.value,
-          quality: Number(quality.value),
-          maxWidth: Number(width.value),
-          maxHeight: Number(height.value),
-          ...(iconMode ? { purpose: "icon" } : {}),
-        };
-        const body = source?.value === "file" ? new FormData() : null;
-        if (body) {
-          body.append("file", file.files[0]);
-          body.append("options", JSON.stringify(parameters));
-        }
-        imported = await api(
-          body ? "/api/images/upload" : "/api/images/import",
-          {
-            method: "POST",
-            signal: controller.signal,
-            body:
-              body ||
-              JSON.stringify({ url: urlInput.value.trim(), ...parameters }),
-          },
-        );
-        if (controller.signal.aborted) return;
-        result.replaceChildren();
-        const preview = make(
-          "img",
-          iconMode ? "background-preview icon-preview" : "background-preview",
-        );
-        preview.alt = iconMode
-          ? "Предпросмотр загруженной иконки"
-          : "Предпросмотр загруженного фона";
-        preview.src = imported.preview;
-        result.append(
-          preview,
-          make(
-            "p",
-            "hint",
-            imported.width +
-              " × " +
-              imported.height +
-              " · " +
-              imported.format.toUpperCase() +
-              " · " +
-              (imported.size / 1024).toFixed(1) +
-              " KiB",
-          ),
-          make("code", "background-path", imported.path),
-        );
-        result.classList.remove("hidden");
-        apply.classList.remove("hidden");
-      } catch (e) {
-        if (!controller.signal.aborted) {
-          error.textContent = e.message;
+    const submit = button(
+      t("Загрузить и конвертировать"),
+      "primary",
+      async () => {
+        if (
+          (source?.value !== "file" &&
+            (!urlInput.value.trim() || !urlInput.checkValidity())) ||
+          (source?.value === "file" &&
+            (!file.files[0] || file.files[0].size > 20 * 1024 * 1024)) ||
+          !width.checkValidity() ||
+          !height.checkValidity() ||
+          (format.value === "jpeg" && !quality.checkValidity())
+        ) {
+          error.textContent = t(
+            "Проверьте источник (ссылка или файл до 20 MiB), качество и размеры изображения.",
+          );
           error.classList.remove("hidden");
+          return;
         }
-      } finally {
-        submit.disabled = false;
-        submit.textContent = "Загрузить и конвертировать";
+        error.classList.add("hidden");
+        result.classList.add("hidden");
+        apply.classList.add("hidden");
+        submit.disabled = true;
+        submit.textContent = t("Загрузка и конвертация…");
+        const fields = [
+          urlInput,
+          format,
+          quality,
+          width,
+          height,
+          ...(file ? [file, source] : []),
+        ];
         fields.forEach((el) => {
-          el.disabled = false;
+          el.disabled = true;
         });
-        toggleQuality();
-      }
-    });
+        try {
+          const parameters = {
+            format: format.value,
+            quality: Number(quality.value),
+            maxWidth: Number(width.value),
+            maxHeight: Number(height.value),
+            ...(iconMode ? { purpose: "icon" } : {}),
+          };
+          const body = source?.value === "file" ? new FormData() : null;
+          if (body) {
+            body.append("file", file.files[0]);
+            body.append("options", JSON.stringify(parameters));
+          }
+          imported = await api(
+            body ? "/api/images/upload" : "/api/images/import",
+            {
+              method: "POST",
+              signal: controller.signal,
+              body:
+                body ||
+                JSON.stringify({ url: urlInput.value.trim(), ...parameters }),
+            },
+          );
+          if (controller.signal.aborted) return;
+          result.replaceChildren();
+          const preview = make(
+            "img",
+            iconMode ? "background-preview icon-preview" : "background-preview",
+          );
+          preview.alt = iconMode
+            ? t("Предпросмотр загруженной иконки")
+            : t("Предпросмотр загруженного фона");
+          preview.src = imported.preview;
+          result.append(
+            preview,
+            make(
+              "p",
+              "hint",
+              imported.width +
+                " × " +
+                imported.height +
+                " · " +
+                imported.format.toUpperCase() +
+                " · " +
+                (imported.size / 1024).toFixed(1) +
+                " KiB",
+            ),
+            make("code", "background-path", imported.path),
+          );
+          result.classList.remove("hidden");
+          apply.classList.remove("hidden");
+        } catch (e) {
+          if (!controller.signal.aborted) {
+            error.textContent = e.message;
+            error.classList.remove("hidden");
+          }
+        } finally {
+          submit.disabled = false;
+          submit.textContent = t("Загрузить и конвертировать");
+          fields.forEach((el) => {
+            el.disabled = false;
+          });
+          toggleQuality();
+        }
+      },
+    );
     if (iconMode) {
       const stored = storedIconGallery((item) => {
         if (source.value !== "stored" || !$("dialog").open) return;
@@ -3029,7 +3339,7 @@ async function imageImportDialog({ iconMode = false, target = null } = {}) {
           apply.classList.add("hidden");
           result.replaceChildren();
           const preview = make("img", "background-preview icon-preview");
-          preview.alt = "Выбранная SVG-иконка";
+          preview.alt = t("Выбранная SVG-иконка");
           preview.referrerPolicy = "no-referrer";
           preview.onload = () => {
             if (
@@ -3043,8 +3353,9 @@ async function imageImportDialog({ iconMode = false, target = null } = {}) {
           };
           preview.onerror = () => {
             if (!result.contains(preview) || source.value !== "gallery") return;
-            error.textContent =
-              "Не удалось загрузить SVG. Проверьте доступ к базе иконок.";
+            error.textContent = t(
+              "Не удалось загрузить SVG. Проверьте доступ к базе иконок.",
+            );
             error.classList.remove("hidden");
           };
           result.append(
@@ -3052,7 +3363,9 @@ async function imageImportDialog({ iconMode = false, target = null } = {}) {
             make(
               "p",
               "hint",
-              "В конфигурацию будет добавлена внешняя SVG-ссылка. Для отображения нужен доступ к CDN.",
+              t(
+                "В конфигурацию будет добавлена внешняя SVG-ссылка. Для отображения нужен доступ к CDN.",
+              ),
             ),
             make("code", "background-path", url),
           );
@@ -3075,10 +3388,16 @@ async function imageImportDialog({ iconMode = false, target = null } = {}) {
         gallery.classList.toggle("hidden", !isGallery);
         if (isGallery) gallery.load();
         $("dialog-description").textContent = isStored
-          ? "Выберите уже сохранённую иконку. Скачивать и конвертировать её повторно не нужно."
+          ? t(
+              "Выберите уже сохранённую иконку. Скачивать и конвертировать её повторно не нужно.",
+            )
           : isGallery
-            ? "Выберите набор и иконку. PNG скачивается на сервер, SVG применяется как внешняя ссылка."
-            : "Изображение будет сохранено локально. Применение добавит путь в черновик — затем сохраните изменения.";
+            ? t(
+                "Выберите набор и иконку. PNG скачивается на сервер, SVG применяется как внешняя ссылка.",
+              )
+            : t(
+                "Изображение будет сохранено локально. Применение добавит путь в черновик — затем сохраните изменения.",
+              );
         urlInput.parentElement.classList.toggle(
           "hidden",
           source.value !== "url",
@@ -3098,7 +3417,7 @@ async function imageImportDialog({ iconMode = false, target = null } = {}) {
       updateSource();
     }
     $("dialog-actions").append(
-      button("Закрыть", "secondary", () => $("dialog").close()),
+      button(t("Закрыть"), "secondary", () => $("dialog").close()),
       submit,
       apply,
     );
@@ -3133,21 +3452,21 @@ async function imageImportDialog({ iconMode = false, target = null } = {}) {
             input.remove();
           }
         }
-        toast("Путь скопирован");
+        toast(t("Путь скопирован"));
       } catch {
-        toast("Не удалось скопировать путь: " + data.directory);
+        toast(t("Не удалось скопировать путь: ") + data.directory);
       }
     });
     try {
       catalog = await api("/catalog.json");
     } catch {
-      toast("Каталог шаблонов недоступен. Редактирование файлов работает.");
+      toast(t("Каталог шаблонов недоступен. Редактирование файлов работает."));
     }
     navigation();
     await load(preferredPanelSection(names));
   } catch (e) {
     showError(e.message);
-    $("file-status").textContent = "Нет подключения";
-    $("file-detail").textContent = "Проверьте сервер";
+    $("file-status").textContent = t("Нет подключения");
+    $("file-detail").textContent = t("Проверьте сервер");
   }
 })();

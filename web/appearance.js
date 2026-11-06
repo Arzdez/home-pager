@@ -77,7 +77,9 @@ function appearanceLayout(settings, path, create = false) {
   if (layout.Kind !== 4) {
     if (create)
       throw Error(
-        "Раскладка использует YAML-ссылку или другой тип. Сначала задайте layout как раздел настроек.",
+        t(
+          "Раскладка использует YAML-ссылку или другой тип. Сначала задайте layout как раздел настроек.",
+        ),
       );
     return null;
   }
@@ -91,7 +93,9 @@ function appearanceLayout(settings, path, create = false) {
     if (next.Kind !== 4) {
       if (create)
         throw Error(
-          "Параметры группы «" + name + "» должны быть разделом настроек.",
+          t("Параметры группы «") +
+            name +
+            t("» должны быть разделом настроек."),
         );
       return null;
     }
@@ -188,8 +192,10 @@ async function openAppearance() {
       }
     }
     openDialog(
-      "Оформление и раскладка",
-      "Настройте свою страницу. Предпросмотр показывает компоновку без запросов к API сервисов. Применение изменит черновик; запись произойдёт после сохранения.",
+      t("Превью"),
+      t(
+        "Настройте свою страницу. Предпросмотр показывает компоновку без запросов к API сервисов. Применение изменит черновик; запись произойдёт после сохранения.",
+      ),
     );
     $("dialog").classList.add("appearance-dialog");
     $("dialog").addEventListener(
@@ -210,7 +216,7 @@ async function openAppearance() {
       make(
         "p",
         "hint",
-        "Схема страницы · масштаб и данные виджетов приблизительные",
+        t("Схема страницы · масштаб и данные виджетов приблизительные"),
       ),
       preview,
     );
@@ -245,7 +251,7 @@ async function openAppearance() {
     function choices(current, values) {
       const input = select(values);
       if (!values.some(([v]) => v === current)) {
-        const extra = make("option", "", "Текущее: " + current);
+        const extra = make("option", "", t("Текущее: ") + current);
         extra.value = current;
         input.append(extra);
       }
@@ -279,57 +285,57 @@ async function openAppearance() {
       });
       return input;
     }
-    const general = section("Страница");
+    const general = section(t("Страница"));
     nativeChoice(
       general,
       "theme",
-      "Тема",
+      t("Тема"),
       [
-        ["__default", "Системная"],
-        ["dark", "Тёмная"],
-        ["light", "Светлая"],
+        ["__default", t("Системная")],
+        ["dark", t("Тёмная")],
+        ["light", t("Светлая")],
       ],
       "__default",
     );
     nativeChoice(
       general,
       "color",
-      "Палитра",
+      t("Палитра"),
       fieldChoices("color", root()),
       "slate",
     );
     nativeChoice(
       general,
       "headerStyle",
-      "Стиль заголовка",
+      t("Стиль заголовка"),
       fieldChoices("headerStyle", root()),
       "underlined",
     );
     nativeChoice(
       general,
       "font",
-      "Шрифт",
+      t("Шрифт"),
       [
-        ["__default", "Manrope — стандартный"],
-        ["plex", "Моноширинный"],
-        ["plexData", "Моноширинные показатели"],
+        ["__default", t("Manrope — стандартный")],
+        ["plex", t("Моноширинный")],
+        ["plexData", t("Моноширинные показатели")],
       ],
       "__default",
     );
-    nativeSwitch(general, "fullWidth", "Страница на всю ширину", false);
+    nativeSwitch(general, "fullWidth", t("Страница на всю ширину"), false);
     nativeSwitch(
       general,
       "useEqualHeights",
-      "Одинаковая высота карточек",
+      t("Одинаковая высота карточек"),
       false,
     );
-    nativeSwitch(general, "hideVersion", "Скрыть версию Homepage", false);
+    nativeSwitch(general, "hideVersion", t("Скрыть версию Homepage"), false);
     const groupColumns = control(
       general,
-      "Вертикальных групп в строке",
+      t("Вертикальных групп в строке"),
       make("input"),
       "appearance-group-columns",
-      "Для групп со способом расположения «Вертикальный столбец».",
+      t("Для групп со способом расположения «Вертикальный столбец»."),
     );
     groupColumns.type = "number";
     groupColumns.min = "1";
@@ -342,14 +348,16 @@ async function openAppearance() {
         draw();
       }
     });
-    const bgSection = section("Фон и эффекты");
+    const bgSection = section(t("Фон и эффекты"));
     let bg = mapValue(settings, "background");
     const bgURL = control(
       bgSection,
-      "Фоновое изображение",
+      t("Фоновое изображение"),
       make("input"),
       "appearance-background-url",
-      "URL или путь из Homepage. Загрузить и конвертировать изображение можно кнопкой «Загрузить фон» в Настройках.",
+      t(
+        "URL или путь из Homepage. Загрузить и конвертировать изображение можно кнопкой «Загрузить фон» в Настройках.",
+      ),
     );
     bgURL.value = bg?.Kind === 8 ? bg.Value : appearanceRead(bg, "image", "");
     function backgroundMap() {
@@ -363,7 +371,9 @@ async function openAppearance() {
       }
       if (value.Kind !== 4)
         throw Error(
-          "Фон использует YAML-ссылку. Сначала задайте изображение в обычном редакторе.",
+          t(
+            "Фон использует YAML-ссылку. Сначала задайте изображение в обычном редакторе.",
+          ),
         );
       return value;
     }
@@ -377,47 +387,51 @@ async function openAppearance() {
     loadRemote.type = "checkbox";
     control(
       bgSection,
-      "Показать удалённое изображение в предпросмотре",
+      t("Показать удалённое изображение в предпросмотре"),
       loadRemote,
       "appearance-load-background",
-      "Загружается только фон, указанный вами. Иконки внешних сервисов не запрашиваются.",
+      t(
+        "Загружается только фон, указанный вами. Иконки внешних сервисов не запрашиваются.",
+      ),
     );
     loadRemote.addEventListener("change", draw);
     const effect = control(
       bgSection,
-      "Где применять эффект",
+      t("Где применять эффект"),
       choices(mapValue(settings, "cardBlur") ? "cards" : "background", [
-        ["background", "Фильтры фонового изображения"],
-        ["cards", "Размытие под карточками"],
+        ["background", t("Фильтры фонового изображения")],
+        ["cards", t("Размытие под карточками")],
       ]),
       "appearance-effect",
-      "Homepage не совмещает фильтры фона с размытием карточек. При применении останется выбранный режим.",
+      t(
+        "Homepage не совмещает фильтры фона с размытием карточек. При применении останется выбранный режим.",
+      ),
     );
     const blurValues = [
-      ["__default", "Без размытия"],
-      ["xs", "Очень слабое"],
-      ["sm", "Слабое"],
-      ["", "Стандартное"],
-      ["md", "Среднее"],
-      ["lg", "Сильное"],
-      ["xl", "Очень сильное"],
-      ["2xl", "Максимальное"],
+      ["__default", t("Без размытия")],
+      ["xs", t("Очень слабое")],
+      ["sm", t("Слабое")],
+      ["", t("Стандартное")],
+      ["md", t("Среднее")],
+      ["lg", t("Сильное")],
+      ["xl", t("Очень сильное")],
+      ["2xl", t("Максимальное")],
     ];
     const bgBlur = control(
       bgSection,
-      "Размытие фона",
+      t("Размытие фона"),
       choices(appearanceRead(bg, "blur", "__default"), blurValues),
       "appearance-background-blur",
     );
     const cardBlur = control(
       bgSection,
-      "Размытие карточек",
+      t("Размытие карточек"),
       choices(appearanceRead(settings, "cardBlur", "__default"), blurValues),
       "appearance-card-blur",
     );
     const brightness = control(
       bgSection,
-      "Яркость фона",
+      t("Яркость фона"),
       choices(
         appearanceRead(bg, "brightness", "100"),
         [0, 50, 75, 90, 95, 100, 105, 110, 125, 150, 200].map((n) => [
@@ -429,7 +443,7 @@ async function openAppearance() {
     );
     const saturation = control(
       bgSection,
-      "Насыщенность фона",
+      t("Насыщенность фона"),
       choices(
         appearanceRead(bg, "saturate", "100"),
         [0, 50, 100, 150, 200].map((n) => [String(n), n + " %"]),
@@ -438,7 +452,7 @@ async function openAppearance() {
     );
     const opacity = control(
       bgSection,
-      "Непрозрачность фона, %",
+      t("Непрозрачность фона, %"),
       make("input"),
       "appearance-background-opacity",
     );
@@ -478,31 +492,31 @@ async function openAppearance() {
         }),
       );
     effect.addEventListener("change", draw);
-    const cards = section("Карточки");
+    const cards = section(t("Карточки"));
     nativeChoice(
       cards,
       "cardStyle",
-      "Обводка",
+      t("Обводка"),
       [
-        ["__default", "Тень — стандартная"],
-        ["hairline", "Тонкая рамка"],
+        ["__default", t("Тень — стандартная")],
+        ["hairline", t("Тонкая рамка")],
       ],
       "__default",
     );
     nativeChoice(
       cards,
       "blockStyle",
-      "Показатели виджетов",
+      t("Показатели виджетов"),
       [
-        ["__default", "Стандартные"],
-        ["refined", "Выразительные числа"],
+        ["__default", t("Стандартные")],
+        ["refined", t("Выразительные числа")],
       ],
       "__default",
     );
     nativeChoice(
       cards,
       "statusStyle",
-      "Статус сервиса",
+      t("Статус сервиса"),
       fieldChoices("statusStyle", root()),
       "dot",
     );
@@ -511,17 +525,19 @@ async function openAppearance() {
     custom.checked = customEnabled;
     control(
       cards,
-      "Своя прозрачность и размеры карточек",
+      t("Своя прозрачность и размеры карточек"),
       custom,
       "appearance-custom-cards",
-      "Эти параметры сохраняются в отдельный блок custom.css. Остальные стили сохраняются.",
+      t(
+        "Эти параметры сохраняются в отдельный блок custom.css. Остальные стили сохраняются.",
+      ),
     );
     const styleControls = [];
     for (const [key, title, min, max] of [
-      ["opacity", "Непрозрачность карточек, %", 0, 100],
-      ["radius", "Скругление, px", 0, 40],
-      ["padding", "Внутренние отступы, px", 0, 24],
-      ["gap", "Расстояние между карточками, px", 0, 32],
+      ["opacity", t("Непрозрачность карточек, %"), 0, 100],
+      ["radius", t("Скругление, px"), 0, 40],
+      ["padding", t("Внутренние отступы, px"), 0, 24],
+      ["gap", t("Расстояние между карточками, px"), 0, 32],
     ]) {
       const input = control(
         cards,
@@ -547,12 +563,14 @@ async function openAppearance() {
       customEnabled = custom.checked;
       draw();
     });
-    const groupSection = section("Группы и порядок");
+    const groupSection = section(t("Группы и порядок"));
     groupSection.append(
       make(
         "p",
         "hint",
-        "Порядок хранится в layout. Широкая группа занимает строку целиком; внутри неё можно выбрать 1–8 колонок карточек. Вложенные группы настраиваются отдельно.",
+        t(
+          "Порядок хранится в layout. Широкая группа занимает строку целиком; внутри неё можно выбрать 1–8 колонок карточек. Вложенные группы настраиваются отдельно.",
+        ),
       ),
     );
     const groupRows = make("div");
@@ -605,7 +623,10 @@ async function openAppearance() {
             move.disabled = index + delta < 0 || index + delta >= list.length;
             move.setAttribute(
               "aria-label",
-              "Группа " + group.name + ": " + (delta < 0 ? "выше" : "ниже"),
+              t("Группа ") +
+                group.name +
+                ": " +
+                (delta < 0 ? t("выше") : t("ниже")),
             );
             actions.append(move);
           }
@@ -617,17 +638,17 @@ async function openAppearance() {
           const layout = appearanceLayout(settings, group.path);
           const location = control(
             body,
-            "Расположение",
+            t("Расположение"),
             choices(appearanceRead(layout, "style", "column"), [
-              ["row", "На всю ширину строки"],
-              ["column", "Вертикальный столбец"],
+              ["row", t("На всю ширину строки")],
+              ["column", t("Вертикальный столбец")],
             ]),
             null,
           );
           location.className = "appearance-group-style";
           const columns = control(
             body,
-            "Колонок карточек",
+            t("Колонок карточек"),
             choices(
               appearanceRead(layout, "columns", "3"),
               Array.from({ length: 8 }, (_, i) => [
@@ -643,16 +664,16 @@ async function openAppearance() {
           header.type = "checkbox";
           header.checked = appearanceRead(layout, "header", "true") !== "false";
           header.className = "appearance-group-header";
-          control(body, "Показывать название группы", header, null);
+          control(body, t("Показывать название группы"), header, null);
           const collapsed = make("input");
           collapsed.type = "checkbox";
           collapsed.checked =
             appearanceRead(layout, "initiallyCollapsed", "false") === "true";
-          control(body, "Свернуть при открытии страницы", collapsed, null);
+          control(body, t("Свернуть при открытии страницы"), collapsed, null);
           collapsed.disabled = !header.checked;
           const tab = control(
             body,
-            "Вкладка (необязательно)",
+            t("Вкладка (необязательно)"),
             make("input"),
             null,
           );
@@ -704,7 +725,7 @@ async function openAppearance() {
           make(
             "p",
             "hint",
-            "Сначала добавьте группы в разделах «Сервисы» или «Закладки».",
+            t("Сначала добавьте группы в разделах «Сервисы» или «Закладки»."),
           ),
         );
     }
@@ -856,7 +877,7 @@ async function openAppearance() {
           if (
             appearanceRead(layout, "initiallyCollapsed", "false") === "true"
           ) {
-            box.append(make("p", "preview-empty", "Группа свёрнута"));
+            box.append(make("p", "preview-empty", t("Группа свёрнута")));
             continue;
           }
           for (const service of group.cards) {
@@ -881,7 +902,9 @@ async function openAppearance() {
               multiple = mapValue(service.config, "widgets");
             for (const item of widget ? [widget] : multiple?.Content || []) {
               const type = appearanceRead(item, "type", "");
-              card.append(make("div", "preview-widget", "Интеграция: " + type));
+              card.append(
+                make("div", "preview-widget", t("Интеграция: ") + type),
+              );
             }
             if (
               mapValue(service.config, "siteMonitor") ||
@@ -889,29 +912,29 @@ async function openAppearance() {
               mapValue(service.config, "container")
             )
               card.append(
-                make("small", "preview-status", "Мониторинг подключён"),
+                make("small", "preview-status", t("Мониторинг подключён")),
               );
             cards.append(card);
           }
           if (!group.cards.length && !group.children.length)
-            cards.append(make("p", "preview-empty", "Пустая группа"));
+            cards.append(make("p", "preview-empty", t("Пустая группа")));
           if (group.children.length) drawGroups(group.children, box);
         }
       }
       drawGroups(groups, canvas);
       if (!groups.length)
         canvas.append(
-          make("p", "preview-empty", "Здесь появятся ваши группы и сервисы"),
+          make("p", "preview-empty", t("Здесь появятся ваши группы и сервисы")),
         );
     }
     renderGroups();
     draw();
     $("dialog-actions").append(
-      button("Отмена", "secondary", () => $("dialog").close()),
-      button("Применить к черновику", "primary", () =>
+      button(t("Отмена"), "secondary", () => $("dialog").close()),
+      button(t("Применить к черновику"), "primary", () =>
         report(() => {
           if (!groupColumns.checkValidity() || !groupColumns.value)
-            throw Error("Число вертикальных групп должно быть от 1 до 8.");
+            throw Error(t("Число вертикальных групп должно быть от 1 до 8."));
           if (effect.value === "cards") {
             const background = mapValue(settings, "background");
             for (const key of ["blur", "brightness", "saturate"])
@@ -931,7 +954,9 @@ async function openAppearance() {
           renderMode();
           $("dialog").close();
           toast(
-            "Оформление добавлено в черновик. Нажмите «Сохранить изменения».",
+            t(
+              "Оформление добавлено в черновик. Нажмите «Сохранить изменения».",
+            ),
           );
         }),
       ),

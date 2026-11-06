@@ -1,27 +1,45 @@
 services:
   home-pager:
-    build: .
+    # Replace with your Docker Hub username
+    image: arzdez/home-pager:latest
     restart: unless-stopped
+
+    # Host port : container port
     ports:
-      - "127.0.0.1:8090:8090"
+      - "8090:8090"
+
+    # UID:GID of the directory owner on the host
+    user: "${PUID:-1000}:${PGID:-1000}"
+
+    # Configuration path inside the container
     command: ["-conf", "/etc/home-pager/home-pager.yaml"]
+
     volumes:
-      - ./config:/config
+      # Automatically initialized config, preserved across updates
       - panel-config:/etc/home-pager
+
+      # Existing Homepage configuration directory
+      - ./config:/config
+
+      # Uploaded icons and backgrounds
       - ./icons:/icons
       - ./images:/images
-    # In the Homepage service, mount this same host directory:
-    #   - ./images:/app/public/images:ro
-    #   - ./icons:/app/public/icons:ro
-    # Set to the UID:GID that owns your existing Homepage config directory.
-    user: "${PUID:-1000}:${PGID:-1000}"
+
+    # Keep the container filesystem read-only
     read_only: true
+
+    # Writable temporary storage in memory
     tmpfs:
       - /tmp
+
+    # Prevent privilege escalation
     security_opt:
       - no-new-privileges:true
+
+    # Drop all additional Linux capabilities
     cap_drop:
       - ALL
 
 volumes:
+  # Persistent storage for the panel configuration
   panel-config:

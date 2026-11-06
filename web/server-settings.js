@@ -5,55 +5,71 @@ async function openServerSettings() {
   await run(async () => {
     const data = await api("/api/server-config");
     openDialog(
-      "Конфигурация сервера Home Pager",
-      "Параметры сохраняются в конфиг на сервере и применяются после перезапуска Home Pager. Файлы Homepage и изображения автоматически не переносятся.",
+      t("Конфигурация сервера Home Pager"),
+      t(
+        "Параметры сохраняются в конфиг на сервере и применяются после перезапуска Home Pager. Файлы Homepage и изображения автоматически не переносятся.",
+      ),
     );
     const body = $("dialog-body");
     body.append(
-      make("p", "hint", "Файл: " + data.path),
-      make("p", "hint", "Относительные пути считаются от: " + data.base),
+      make("p", "hint", t("Файл: ") + data.path),
+      make("p", "hint", t("Относительные пути считаются от: ") + data.base),
     );
     if (data.overrides?.length)
       body.append(
         make(
           "p",
           "error",
-          "При запуске заданы CLI-параметры: " +
+          t("При запуске заданы CLI-параметры: ") +
             data.overrides.join(", ") +
-            ". Они имеют приоритет над конфигом; уберите соответствующие параметры из команды запуска, чтобы изменения вступили в силу.",
+            t(
+              ". Они имеют приоритет над конфигом; уберите соответствующие параметры из команды запуска, чтобы изменения вступили в силу.",
+            ),
         ),
       );
     const fields = {};
     for (const [key, title, help] of [
       [
         "listen",
-        "Адрес прослушивания",
-        "Например: 127.0.0.1:8090 или 0.0.0.0:8090. Новый адрес действует после перезапуска.",
+        t("Адрес прослушивания"),
+        t(
+          "Например: 127.0.0.1:8090 или 0.0.0.0:8090. Новый адрес действует после перезапуска.",
+        ),
       ],
       [
         "config_dir",
-        "Каталог конфигурации Homepage",
-        "Путь на сервере к settings.yaml, services.yaml и остальным файлам. Каталог должен быть доступен панели для записи.",
+        t("Каталог конфигурации Homepage"),
+        t(
+          "Путь на сервере к settings.yaml, services.yaml и остальным файлам. Каталог должен быть доступен панели для записи.",
+        ),
       ],
       [
         "icons_dir",
-        "Каталог загруженных иконок",
-        "Путь на сервере. Пусто — icons внутри каталога конфигурации Homepage.",
+        t("Каталог загруженных иконок"),
+        t(
+          "Путь на сервере. Пусто — icons внутри каталога конфигурации Homepage.",
+        ),
       ],
       [
         "icons_url",
-        "URL-путь иконок в Homepage",
-        "Например: /icons. Должен соответствовать монтированию или настройкам веб-сервера Homepage.",
+        t("URL-путь иконок в Homepage"),
+        t(
+          "Например: /icons. Должен соответствовать монтированию или настройкам веб-сервера Homepage.",
+        ),
       ],
       [
         "images_dir",
-        "Каталог загруженных фонов",
-        "Путь на сервере. Пусто — images внутри каталога конфигурации Homepage.",
+        t("Каталог загруженных фонов"),
+        t(
+          "Путь на сервере. Пусто — images внутри каталога конфигурации Homepage.",
+        ),
       ],
       [
         "images_url",
-        "URL-путь фонов в Homepage",
-        "Например: /images. Смена пути не переписывает ссылки в сервисах и настройках Homepage.",
+        t("URL-путь фонов в Homepage"),
+        t(
+          "Например: /images. Смена пути не переписывает ссылки в сервисах и настройках Homepage.",
+        ),
       ],
     ]) {
       const input = field(title, make("input"), help);
@@ -62,23 +78,25 @@ async function openServerSettings() {
       input.required = !["images_dir", "icons_dir"].includes(key);
       fields[key] = input;
     }
-    body.append(make("h3", "", "Авторизация"));
+    body.append(make("h3", "", t("Авторизация")));
     const passwordMode = field(
-      "Пароль панели",
+      t("Пароль панели"),
       select([
         [
           "keep",
           data.hasPassword
-            ? "Оставить текущий пароль"
-            : "Оставить текущую настройку — пароль не задан",
+            ? t("Оставить текущий пароль")
+            : t("Оставить текущую настройку — пароль не задан"),
         ],
-        ["change", "Задать новый пароль"],
-        ["disable", "Отключить пароль"],
+        ["change", t("Задать новый пароль")],
+        ["disable", t("Отключить пароль")],
       ]),
-      "Текущий пароль не передаётся в браузер. Изменение действует после перезапуска.",
+      t(
+        "Текущий пароль не передаётся в браузер. Изменение действует после перезапуска.",
+      ),
     );
     passwordMode.id = "server-config-password-mode";
-    const password = field("Новый пароль", make("input"));
+    const password = field(t("Новый пароль"), make("input"));
     password.id = "server-config-password";
     password.type = "password";
     password.autocomplete = "new-password";
@@ -89,19 +107,19 @@ async function openServerSettings() {
         passwordMode.value !== "change",
       ),
     );
-    body.append(make("h3", "", "Прокси для скачивания изображений"));
+    body.append(make("h3", "", t("Прокси для скачивания изображений")));
     const proxyModes = {};
     for (const [key, title] of [
-      ["http_proxy", "HTTP-прокси"],
-      ["https_proxy", "HTTPS-прокси"],
-      ["no_proxy", "Без прокси для адресов"],
+      ["http_proxy", t("HTTP-прокси")],
+      ["https_proxy", t("HTTPS-прокси")],
+      ["no_proxy", t("Без прокси для адресов")],
     ]) {
       const mode = field(
-        title + ": режим",
+        title + t(": режим"),
         select([
-          ["inherit", "Из окружения процесса"],
-          ["off", "Не использовать"],
-          ["custom", "Указать значение"],
+          ["inherit", t("Из окружения процесса")],
+          ["off", t("Не использовать")],
+          ["custom", t("Указать значение")],
         ]),
       );
       mode.id = "server-config-" + key + "-mode";
@@ -109,8 +127,8 @@ async function openServerSettings() {
         title,
         make("input"),
         key === "no_proxy"
-          ? "Адреса через запятую: localhost,127.0.0.1,.example.com"
-          : "Например: http://proxy.example.com:3128",
+          ? t("Адреса через запятую: localhost,127.0.0.1,.example.com")
+          : t("Например: http://proxy.example.com:3128"),
       );
       input.id = "server-config-" + key;
       const value = data.settings[key];
@@ -124,7 +142,7 @@ async function openServerSettings() {
       proxyModes[key] = mode;
     }
     const active = make("details", "advanced-options");
-    active.append(make("summary", "", "Действующие параметры процесса"));
+    active.append(make("summary", "", t("Действующие параметры процесса")));
     const values = make("pre", "server-config-active");
     values.textContent = [
       "listen",
@@ -142,57 +160,66 @@ async function openServerSettings() {
     status.id = "server-config-status";
     status.setAttribute("role", "status");
     body.append(status);
-    const save = button("Сохранить конфиг на сервере", "primary", async () => {
-      status.className = "hint";
-      for (const input of Object.values(fields)) {
-        if (!input.checkValidity()) {
-          input.reportValidity();
+    const save = button(
+      t("Сохранить конфиг на сервере"),
+      "primary",
+      async () => {
+        status.className = "hint";
+        for (const input of Object.values(fields)) {
+          if (!input.checkValidity()) {
+            input.reportValidity();
+            return;
+          }
+        }
+        if (passwordMode.value === "change" && !password.value) {
+          status.className = "error";
+          status.textContent = t(
+            "Введите новый пароль или выберите отключение пароля.",
+          );
           return;
         }
-      }
-      if (passwordMode.value === "change" && !password.value) {
-        status.className = "error";
-        status.textContent =
-          "Введите новый пароль или выберите отключение пароля.";
-        return;
-      }
-      const settings = {};
-      for (const [key, input] of Object.entries(fields)) {
-        const mode = proxyModes[key]?.value;
-        settings[key] =
-          mode === "inherit" ? null : mode === "off" ? "" : input.value.trim();
-      }
-      const request = { revision: data.revision, settings };
-      if (passwordMode.value !== "keep")
-        request.password =
-          passwordMode.value === "disable" ? "" : password.value;
-      save.disabled = true;
-      try {
-        const result = await api("/api/server-config", {
-          method: "PUT",
-          body: JSON.stringify(request),
-        });
-        data.revision = result.revision;
-        if (request.password !== undefined)
-          data.hasPassword = request.password !== "";
-        password.value = "";
-        passwordMode.value = "keep";
-        passwordMode.options[0].textContent = data.hasPassword
-          ? "Оставить текущий пароль"
-          : "Оставить текущую настройку — пароль не задан";
-        password.parentElement.classList.add("hidden");
-        status.textContent =
-          "Конфиг сохранён. Для применения перезапустите Home Pager." +
-          (result.backup ? " Резервная копия: " + result.backup : "");
-      } catch (e) {
-        status.className = "error";
-        status.textContent = e.message;
-      } finally {
-        save.disabled = false;
-      }
-    });
+        const settings = {};
+        for (const [key, input] of Object.entries(fields)) {
+          const mode = proxyModes[key]?.value;
+          settings[key] =
+            mode === "inherit"
+              ? null
+              : mode === "off"
+                ? ""
+                : input.value.trim();
+        }
+        const request = { revision: data.revision, settings };
+        if (passwordMode.value !== "keep")
+          request.password =
+            passwordMode.value === "disable" ? "" : password.value;
+        save.disabled = true;
+        try {
+          const result = await api("/api/server-config", {
+            method: "PUT",
+            body: JSON.stringify(request),
+          });
+          data.revision = result.revision;
+          if (request.password !== undefined)
+            data.hasPassword = request.password !== "";
+          password.value = "";
+          passwordMode.value = "keep";
+          passwordMode.options[0].textContent = data.hasPassword
+            ? t("Оставить текущий пароль")
+            : t("Оставить текущую настройку — пароль не задан");
+          password.parentElement.classList.add("hidden");
+          status.textContent =
+            t("Конфиг сохранён. Для применения перезапустите Home Pager.") +
+            (result.backup ? t(" Резервная копия: ") + result.backup : "");
+        } catch (e) {
+          status.className = "error";
+          status.textContent = e.message;
+        } finally {
+          save.disabled = false;
+        }
+      },
+    );
     $("dialog-actions").append(
-      button("Закрыть", "secondary", () => $("dialog").close()),
+      button(t("Закрыть"), "secondary", () => $("dialog").close()),
       save,
     );
   });

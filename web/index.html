@@ -4,12 +4,16 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="color-scheme" content="light" />
-    <title>Home Pager · Управление Homepage</title>
+    <title data-i18n="Home Pager · Управление Homepage">
+      Home Pager · Управление Homepage
+    </title>
+    <script src="/translations.en.js"></script>
+    <script src="/i18n.js"></script>
     <script src="/panel-settings.js"></script>
     <link rel="stylesheet" href="/style.css" />
-    <script src="/app.js" defer></script>
-    <script src="/appearance.js" defer></script>
-    <script src="/server-settings.js" defer></script>
+    <script src="/app.js" defer=""></script>
+    <script src="/appearance.js" defer=""></script>
+    <script src="/server-settings.js" defer=""></script>
   </head>
   <body>
     <aside id="sidebar">
@@ -21,37 +25,58 @@
         <div class="workspace-heading">
           <span class="status-dot" aria-hidden="true"></span
           ><strong>Homepage</strong
-          ><span class="workspace-status">Подключено</span>
+          ><span class="workspace-status" data-i18n="Подключено"
+            >Подключено</span
+          >
         </div>
-        <div class="workspace-label">Каталог конфигурации</div>
+        <div class="workspace-label" data-i18n="Каталог конфигурации">
+          Каталог конфигурации
+        </div>
         <div class="workspace-path">
-          <code id="directory">Подключение…</code
+          <code id="directory" data-i18n="Подключение…">Подключение…</code
           ><button
             id="copy-directory"
             class="icon-button"
             title="Копировать полный путь"
             aria-label="Копировать полный путь к конфигурации"
+            data-i18n-title="Копировать полный путь"
+            data-i18n-aria-label="Копировать полный путь к конфигурации"
           >
             ⧉
           </button>
         </div>
       </div>
-      <p class="nav-label">КОНФИГУРАЦИЯ</p>
-      <nav id="navigation" aria-label="Файлы конфигурации"></nav>
-      <button id="new-file" class="new-file">＋ Дополнительный YAML</button>
-      <button id="panel-settings-open" class="panel-settings-button">
+      <p class="nav-label" data-i18n="КОНФИГУРАЦИЯ">КОНФИГУРАЦИЯ</p>
+      <nav
+        id="navigation"
+        aria-label="Файлы конфигурации"
+        data-i18n-aria-label="Файлы конфигурации"
+      ></nav>
+      <button id="new-file" class="new-file" data-i18n="＋ Дополнительный YAML">
+        ＋ Дополнительный YAML
+      </button>
+      <button
+        id="panel-settings-open"
+        class="panel-settings-button"
+        data-i18n="⚙ Настройки панели"
+      >
         ⚙ Настройки панели
       </button>
       <div class="sidebar-footer">
         <span class="footer-icon">◈</span>
         <div>
-          Всё под вашим контролем<small>Изменения сохраняются в config</small>
+          <span data-i18n="Всё под вашим контролем"
+            >Всё под вашим контролем</span
+          ><small data-i18n="Изменения сохраняются в config"
+            >Изменения сохраняются в config</small
+          >
         </div>
         <a
           href="https://gethomepage.dev/configs/"
           target="_blank"
           rel="noreferrer"
           aria-label="Документация Homepage"
+          data-i18n-aria-label="Документация Homepage"
           >↗</a
         >
       </div>
@@ -62,12 +87,14 @@
           class="icon-button mobile-menu"
           id="menu"
           aria-label="Открыть меню"
+          data-i18n-aria-label="Открыть меню"
         >
           ☰
         </button>
         <div class="breadcrumb">
-          Рабочее пространство <span>/</span>
-          <strong id="crumb">Настройки</strong>
+          <span data-i18n="Рабочее пространство">Рабочее пространство</span>
+          <span>/</span>
+          <strong id="crumb" data-i18n="Настройки">Настройки</strong>
         </div>
         <a
           class="docs-link"
@@ -75,14 +102,20 @@
           href="https://gethomepage.dev/configs/"
           target="_blank"
           rel="noreferrer"
+          data-i18n="Документация ↗"
           >Документация ↗</a
         >
       </header>
       <section class="page-heading">
         <div>
-          <div class="eyebrow">ВАШ HOMEPAGE, В ВАШИХ РУКАХ</div>
-          <h1 id="title">Настройки</h1>
-          <p id="description">
+          <div class="eyebrow" data-i18n="ВАШ HOMEPAGE, В ВАШИХ РУКАХ">
+            ВАШ HOMEPAGE, В ВАШИХ РУКАХ
+          </div>
+          <h1 id="title" data-i18n="Настройки">Настройки</h1>
+          <p
+            id="description"
+            data-i18n="Настройте внешний вид и поведение главной страницы."
+          >
             Настройте внешний вид и поведение главной страницы.
           </p>
         </div>
@@ -94,33 +127,45 @@
         <div>
           <span class="summary-icon">◈</span>
           <div>
-            <strong>Прямое подключение</strong>
-            <p>Работа с файлами конфигурации Homepage</p>
+            <strong data-i18n="Прямое подключение">Прямое подключение</strong>
+            <p data-i18n="Работа с файлами конфигурации Homepage">
+              Работа с файлами конфигурации Homepage
+            </p>
           </div>
         </div>
         <div>
           <span class="summary-icon">↺</span>
           <div>
-            <strong>История изменений</strong>
-            <p>Копия файла перед каждым сохранением</p>
+            <strong data-i18n="История изменений">История изменений</strong>
+            <p data-i18n="Копия файла перед каждым сохранением">
+              Копия файла перед каждым сохранением
+            </p>
           </div>
         </div>
         <div>
           <span class="summary-icon green">✓</span>
           <div>
-            <strong id="file-status">Загрузка…</strong>
-            <p id="file-detail">Проверяем конфигурацию</p>
+            <strong id="file-status" data-i18n="Загрузка…">Загрузка…</strong>
+            <p id="file-detail" data-i18n="Проверяем конфигурацию">
+              Проверяем конфигурацию
+            </p>
           </div>
         </div>
       </section>
       <section class="editor-panel">
         <div class="editor-toolbar">
-          <div class="tabs" role="tablist" aria-label="Режим редактора">
+          <div
+            class="tabs"
+            role="tablist"
+            aria-label="Режим редактора"
+            data-i18n-aria-label="Режим редактора"
+          >
             <button
               id="visual-tab"
               class="active"
               role="tab"
               aria-selected="true"
+              data-i18n="▦ Визуальный редактор"
             >
               ▦ Визуальный редактор</button
             ><button id="raw-tab" role="tab" aria-selected="false">
@@ -128,8 +173,11 @@
             </button>
           </div>
           <div class="toolbar-actions">
-            <button id="history" class="quiet">↺ <span>История</span></button
-            ><button id="download" class="quiet">↓ <span>Скачать</span></button>
+            <button id="history" class="quiet">
+              ↺ <span data-i18n="История">История</span></button
+            ><button id="download" class="quiet">
+              ↓ <span data-i18n="Скачать">Скачать</span>
+            </button>
           </div>
         </div>
         <div class="editor-subbar">
@@ -140,20 +188,39 @@
               type="search"
               placeholder="Найти параметр…"
               aria-label="Найти параметр"
+              data-i18n-placeholder="Найти параметр…"
+              data-i18n-aria-label="Найти параметр"
             />
           </div>
           <div class="insert-actions">
-            <button id="appearance-open" class="quiet hidden">
-              ◫ Оформление и раскладка
+            <button
+              id="appearance-open"
+              class="quiet hidden"
+              data-i18n="◫ Превью"
+            >
+              ◫ Превью
             </button>
-            <button id="background-import" class="quiet hidden">
+            <button
+              id="background-import"
+              class="quiet hidden"
+              data-i18n="▧ Загрузить фон"
+            >
               ▧ Загрузить фон
             </button>
-            <button id="icon-import" class="quiet hidden">
+            <button
+              id="icon-import"
+              class="quiet hidden"
+              data-i18n="▧ Загрузить иконку"
+            >
               ▧ Загрузить иконку
             </button>
-            <button id="library" class="quiet">▦ Каталог Homepage</button
-            ><button id="add-root" class="soft-button">
+            <button id="library" class="quiet" data-i18n="▦ Каталог Homepage">
+              ▦ Каталог Homepage</button
+            ><button
+              id="add-root"
+              class="soft-button"
+              data-i18n="＋ Добавить параметр"
+            >
               ＋ Добавить параметр
             </button>
           </div>
@@ -163,36 +230,59 @@
         <div id="raw-pane" class="hidden">
           <div class="code-caption">
             <span id="raw-label">YAML · UTF-8</span
-            ><span>Комментарии и переменные Homepage поддерживаются</span>
+            ><span data-i18n="Комментарии и переменные Homepage поддерживаются"
+              >Комментарии и переменные Homepage поддерживаются</span
+            >
           </div>
           <textarea
             id="raw"
             spellcheck="false"
             aria-label="Исходный код конфигурации"
+            data-i18n-aria-label="Исходный код конфигурации"
           ></textarea>
         </div>
         <div class="editor-footer">
           <span
             ><span class="status-dot" id="dirty-dot"></span
-            ><span id="dirty-label">Нет несохранённых изменений</span></span
-          ><span>Ctrl / ⌘ + S — сохранить</span>
+            ><span id="dirty-label" data-i18n="Нет несохранённых изменений"
+              >Нет несохранённых изменений</span
+            ></span
+          ><span data-i18n="Ctrl / ⌘ + S — сохранить"
+            >Ctrl / ⌘ + S — сохранить</span
+          >
         </div>
       </section>
       <div class="savebar">
         <div>
-          <strong>Сохраняется только текущий файл</strong>
-          <p>После сохранения обновите Homepage кнопкой ↻ на его странице.</p>
+          <strong data-i18n="Сохраняется только текущий файл"
+            >Сохраняется только текущий файл</strong
+          >
+          <p
+            data-i18n="После сохранения обновите Homepage кнопкой ↻ на его странице."
+          >
+            После сохранения обновите Homepage кнопкой ↻ на его странице.
+          </p>
         </div>
         <div>
-          <button id="reload" class="secondary">Сбросить</button
-          ><button id="review" class="secondary">Посмотреть изменения</button
+          <button id="reload" class="secondary" data-i18n="Сбросить">
+            Сбросить</button
+          ><button
+            id="review"
+            class="secondary"
+            data-i18n="Посмотреть изменения"
+          >
+            Посмотреть изменения</button
           ><button id="save" class="primary">
-            Сохранить изменения <span>↗</span>
+            <span data-i18n="Сохранить изменения">Сохранить изменения</span>
+            <span>↗</span>
           </button>
         </div>
       </div>
       <p class="bottom-note">
-        HOME PAGER <span>•</span> Независимая панель управления
+        HOME PAGER <span>•</span>
+        <span data-i18n="Независимая панель управления"
+          >Независимая панель управления</span
+        >
         <a href="https://gethomepage.dev" target="_blank" rel="noreferrer"
           >Homepage ↗</a
         >
@@ -204,7 +294,12 @@
           <h2 id="dialog-title"></h2>
           <p id="dialog-description"></p>
         </div>
-        <button id="dialog-close" class="icon-button" aria-label="Закрыть">
+        <button
+          id="dialog-close"
+          class="icon-button"
+          aria-label="Закрыть"
+          data-i18n-aria-label="Закрыть"
+        >
           ×
         </button>
       </div>

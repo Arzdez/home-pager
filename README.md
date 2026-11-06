@@ -1,6 +1,11 @@
 # Home Pager
 
-Самостоятельная веб-панель на Go для редактирования конфигурации [Homepage](https://gethomepage.dev/). Один бинарник со встроенным интерфейсом на русском языке. Node.js и сборка frontend для запуска не нужны.
+Самостоятельная веб-панель на Go для редактирования конфигурации [Homepage](https://gethomepage.dev/). Один бинарник со встроенным интерфейсом на русском и английском языках. Node.js и сборка frontend для запуска не нужны.
+
+Язык выбирается в **Настройки панели → Язык панели**. По умолчанию — русский;
+выбор сохраняется в браузере. После сохранения страница перезагружается.
+Перед сменой языка сохраните или отмените черновик Homepage. Названия групп,
+сервисов и значения конфигурации не переводятся; язык самого Homepage задаётся отдельно.
 
 Для ALT Linux подготовлены [RPM spec](home-pager.spec), `.gear/rules`,
 systemd-сервис и стартовый конфиг. Сборка и установка описаны в
@@ -236,7 +241,7 @@ go build -o home-pager .
 
 Источники структуры и поведения: [конфигурация](https://gethomepage.dev/configs/), [настройки](https://gethomepage.dev/configs/settings/), [сервисы](https://gethomepage.dev/configs/services/), [виджеты](https://gethomepage.dev/widgets/), [исходники](https://github.com/gethomepage/homepage).
 
-Лицензия: GPL-3.0, см. `LICENSE` и `THIRD_PARTY_NOTICES.md`. Независимый проект, не официальный компонент Homepage.
+Лицензия Home Pager: **GNU GPL v3.0 only (`GPL-3.0-only`)**, см. [LICENSE](LICENSE). Лицензии сторонних компонентов сохранены и перечислены в [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Независимый проект, не официальный компонент Homepage.
 
 ### Галереи иконок
 
