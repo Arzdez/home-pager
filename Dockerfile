@@ -2,7 +2,7 @@ FROM golang:1.26-alpine AS build
 WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
-COPY main.go images.go app_config.go appearance.go ./
+COPY main.go images.go app_config.go appearance.go server_config.go ./
 COPY web ./web
 RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /home-pager .
 

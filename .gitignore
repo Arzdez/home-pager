@@ -9,3 +9,4 @@ node_modules/
 home-pager.yaml
 !/packaging/altlinux/home-pager.yaml
 /dist/
+*.yaml.bak-*

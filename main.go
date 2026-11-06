@@ -37,6 +37,8 @@ type server struct {
 	iconsDir, iconsURL   string
 	imageMu              sync.Mutex
 	imageClient          *http.Client
+	startup              *appSettings
+	configMu             sync.Mutex
 }
 
 type document struct {
@@ -73,7 +75,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	s := &server{dir: abs, password: cfg.Password, imagesDir: cfg.ImagesDir, imagesURL: strings.TrimRight(cfg.ImagesURL, "/"), iconsDir: cfg.IconsDir, iconsURL: strings.TrimRight(cfg.IconsURL, "/")}
+	s := &server{dir: abs, password: cfg.Password, imagesDir: cfg.ImagesDir, imagesURL: strings.TrimRight(cfg.ImagesURL, "/"), iconsDir: cfg.IconsDir, iconsURL: strings.TrimRight(cfg.IconsURL, "/"), startup: &cfg}
 	log.Printf("Home Pager: http://%s | config: %s", cfg.Listen, abs)
 	log.Fatal((&http.Server{Addr: cfg.Listen, Handler: s.handler(), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, WriteTimeout: imageDownloadTimeout + 45*time.Second, IdleTimeout: 60 * time.Second}).ListenAndServe())
 }
@@ -81,6 +83,8 @@ func main() {
 func (s *server) handler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/files", s.list)
+	mux.HandleFunc("GET /api/server-config", s.getServerConfig)
+	mux.HandleFunc("PUT /api/server-config", s.saveServerConfig)
 	mux.HandleFunc("GET /api/file", s.get)
 	mux.HandleFunc("POST /api/convert", s.convert)
 	mux.HandleFunc("PUT /api/file", s.save)

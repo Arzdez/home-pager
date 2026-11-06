@@ -2,7 +2,7 @@
 %define _enable_debug_packages 0
 
 Name: home-pager
-Version: 0.1.0
+Version: 0.1.1
 Release: alt1
 
 Summary: Web configuration editor for Homepage dashboards
@@ -52,7 +52,7 @@ go test -mod=vendor ./...
 %install
 install -Dm755 %name %buildroot%_bindir/%name
 install -Dm644 packaging/altlinux/%name.service %buildroot%_unitdir/%name.service
-install -Dm640 packaging/altlinux/%name.yaml %buildroot%_sysconfdir/%name/%name.yaml
+install -Dm660 packaging/altlinux/%name.yaml %buildroot%_sysconfdir/%name/%name.yaml
 install -dm750 %buildroot/var/lib/%name
 install -dm750 %buildroot/var/lib/%name/config
 install -dm750 %buildroot/var/lib/%name/images
@@ -76,13 +76,17 @@ fi
 %doc web/THIRD_PARTY_LICENSES.txt packaging/altlinux/README.alt.md
 %_bindir/%name
 %_unitdir/%name.service
-%dir %attr(0750,root,%name) %_sysconfdir/%name
-%config(noreplace) %attr(0640,root,%name) %_sysconfdir/%name/%name.yaml
+%dir %attr(0770,root,%name) %_sysconfdir/%name
+%config(noreplace) %attr(0660,root,%name) %_sysconfdir/%name/%name.yaml
 %dir %attr(0750,%name,%name) /var/lib/%name
 %dir %attr(0750,%name,%name) /var/lib/%name/config
 %dir %attr(0750,%name,%name) /var/lib/%name/images
 %dir %attr(0750,%name,%name) /var/lib/%name/icons
 
 %changelog
+* Fri Nov 06 2026 Evgenii Sozonov <infagot@gmail.com> 0.1.1-alt1
+- Add GUI editing of startup configuration with revision checks and backups.
+- Allow the service to update its dedicated configuration directory.
+
 * Fri Nov 06 2026 Evgenii Sozonov <infagot@gmail.com> 0.1.0-alt1
 - Initial ALT Linux package with vendored dependencies and systemd service.

@@ -16,6 +16,7 @@ StateDirectoryMode=0750
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=full
+ReadWritePaths=/etc/home-pager
 
 [Install]
 WantedBy=multi-user.target

@@ -14,6 +14,8 @@ import (
 )
 
 type appSettings struct {
+	configPath string
+	overrides  []string
 	Listen     string  `yaml:"listen"`
 	ConfigDir  string  `yaml:"config_dir"`
 	ImagesDir  string  `yaml:"images_dir"`
@@ -48,6 +50,16 @@ func settingsFromArgs(args []string) (appSettings, error) {
 	path := *conf
 	if path == "" {
 		path = "home-pager.yaml"
+	}
+	configPath, pathErr := filepath.Abs(path)
+	if pathErr != nil {
+		return cfg, pathErr
+	}
+	cfg.configPath = configPath
+	for name := range visited {
+		if name != "conf" {
+			cfg.overrides = append(cfg.overrides, name)
+		}
 	}
 	f, err := os.Open(path)
 	if err != nil {

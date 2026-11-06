@@ -119,6 +119,16 @@ function openPanelSettings() {
     "Тема и отображение Home Pager. Настройки сохраняются в этом браузере; конфигурация и оформление самого Homepage не меняются.",
   );
   const body = $("dialog-body");
+  body.append(
+    button(
+      "Конфигурация сервера: пути, подключение и пароль →",
+      "secondary",
+      () => {
+        $("dialog").close();
+        openServerSettings();
+      },
+    ),
+  );
   const add = (title, input, help) => field(title, input, help);
   function choice(key, title, options, help) {
     const input = add(title, select(options), help);

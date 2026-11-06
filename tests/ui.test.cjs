@@ -94,6 +94,9 @@ async function setup(
   new Script(readFileSync("web/appearance.js", "utf8")).runInContext(
     dom.getInternalVMContext(),
   );
+  new Script(readFileSync("web/server-settings.js", "utf8")).runInContext(
+    dom.getInternalVMContext(),
+  );
   await until(
     () => w.document.getElementById("file-status").textContent !== "Загрузка…",
     "initial document",
@@ -1660,6 +1663,51 @@ test("duplicate groups services and widgets creates independent drafts with uniq
     assert.equal(new Set(anchors).size, anchors.length);
     assert.ok(!d.getElementById("file-status").textContent.includes("Ошибка"));
   } finally {
+    dom.window.close();
+  }
+});
+
+test("server config GUI saves paths and password separately from Homepage and requires restart", async () => {
+  const metadata = await (await fetch(base + "/api/server-config")).json();
+  const beforeConfig = readFileSync(metadata.path, "utf8");
+  const dom = await setup(),
+    w = dom.window,
+    d = w.document;
+  try {
+    click(w, "#panel-settings-open");
+    [...d.querySelectorAll("#dialog-body button")]
+      .find((b) => b.textContent.includes("Конфигурация сервера"))
+      .click();
+    await until(
+      () => d.getElementById("server-config-icons_dir"),
+      "server configuration form",
+    );
+    const old = (await (await fetch(base + "/api/server-config")).json()).active
+      .icons_dir;
+    type(w, d.getElementById("server-config-icons_dir"), "./new-icons");
+    const pm = d.getElementById("server-config-password-mode");
+    pm.value = "change";
+    pm.dispatchEvent(new w.Event("change"));
+    type(w, d.getElementById("server-config-password"), "private-new-password");
+    click(w, "#dialog-actions button.primary");
+    await until(() =>
+      d
+        .getElementById("server-config-status")
+        .textContent.includes("Конфиг сохранён"),
+    );
+    const response = await (await fetch(base + "/api/server-config")).text();
+    const after = JSON.parse(response);
+    assert.equal(after.settings.icons_dir, "./new-icons");
+    assert.equal(after.active.icons_dir, old);
+    assert.equal(after.hasPassword, true);
+    assert.ok(!response.includes("private-new-password"));
+    assert.match(
+      d.getElementById("server-config-status").textContent,
+      /перезапустите Home Pager/,
+    );
+    assert.equal(d.getElementById("server-config-password").value, "");
+  } finally {
+    writeFileSync(metadata.path, beforeConfig);
     dom.window.close();
   }
 });

@@ -425,10 +425,9 @@ h1 {
 }
 .field-row {
   display: grid;
-  grid-template-columns: minmax(9.375rem, 1fr) minmax(
-      10.625rem,
-      1.25fr
-    ) 1.6875rem;
+  grid-template-columns:
+    minmax(9.375rem, 1fr) minmax(10.625rem, 1.25fr)
+    1.6875rem;
   align-items: center;
   gap: 1.125rem;
   padding: 1.0625rem 0;
@@ -1832,4 +1831,9 @@ aside > * {
   :root {
     font-size: 16px;
   }
+}
+.server-config-active {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 0.7rem;
 }
