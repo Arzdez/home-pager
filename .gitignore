@@ -1,0 +1,11 @@
+.tools/
+config/
+home-pager
+home-pager.exe
+home-pager-linux-*
+*.test
+.env
+node_modules/
+home-pager.yaml
+!/packaging/altlinux/home-pager.yaml
+/dist/

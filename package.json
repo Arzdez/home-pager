@@ -1,0 +1,11 @@
+{
+  "name": "home-pager-ui-tests",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/ui.test.cjs"
+  },
+  "devDependencies": {
+    "jsdom": "26.1.0",
+    "prettier": "3.5.3"
+  }
+}

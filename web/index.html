@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>Home Pager · Управление Homepage</title>
+    <script src="/panel-settings.js"></script>
+    <link rel="stylesheet" href="/style.css" />
+    <script src="/app.js" defer></script>
+    <script src="/appearance.js" defer></script>
+  </head>
+  <body>
+    <aside id="sidebar">
+      <a class="brand" href="/"
+        ><span class="brand-icon">h<span>p</span></span
+        ><span>home pager<small>HOMEPAGE CONFIG MANAGER</small></span></a
+      >
+      <div class="workspace">
+        <div class="workspace-heading">
+          <span class="status-dot" aria-hidden="true"></span
+          ><strong>Homepage</strong
+          ><span class="workspace-status">Подключено</span>
+        </div>
+        <div class="workspace-label">Каталог конфигурации</div>
+        <div class="workspace-path">
+          <code id="directory">Подключение…</code
+          ><button
+            id="copy-directory"
+            class="icon-button"
+            title="Копировать полный путь"
+            aria-label="Копировать полный путь к конфигурации"
+          >
+            ⧉
+          </button>
+        </div>
+      </div>
+      <p class="nav-label">КОНФИГУРАЦИЯ</p>
+      <nav id="navigation" aria-label="Файлы конфигурации"></nav>
+      <button id="new-file" class="new-file">＋ Дополнительный YAML</button>
+      <button id="panel-settings-open" class="panel-settings-button">
+        ⚙ Настройки панели
+      </button>
+      <div class="sidebar-footer">
+        <span class="footer-icon">◈</span>
+        <div>
+          Всё под вашим контролем<small>Изменения сохраняются в config</small>
+        </div>
+        <a
+          href="https://gethomepage.dev/configs/"
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Документация Homepage"
+          >↗</a
+        >
+      </div>
+    </aside>
+    <main>
+      <header class="topbar">
+        <button
+          class="icon-button mobile-menu"
+          id="menu"
+          aria-label="Открыть меню"
+        >
+          ☰
+        </button>
+        <div class="breadcrumb">
+          Рабочее пространство <span>/</span>
+          <strong id="crumb">Настройки</strong>
+        </div>
+        <a
+          class="docs-link"
+          id="docs"
+          href="https://gethomepage.dev/configs/"
+          target="_blank"
+          rel="noreferrer"
+          >Документация ↗</a
+        >
+      </header>
+      <section class="page-heading">
+        <div>
+          <div class="eyebrow">ВАШ HOMEPAGE, В ВАШИХ РУКАХ</div>
+          <h1 id="title">Настройки</h1>
+          <p id="description">
+            Настройте внешний вид и поведение главной страницы.
+          </p>
+        </div>
+        <div class="file-badge">
+          <span>⌘</span><code id="filename">settings.yaml</code>
+        </div>
+      </section>
+      <section class="summary">
+        <div>
+          <span class="summary-icon">◈</span>
+          <div>
+            <strong>Прямое подключение</strong>
+            <p>Работа с файлами конфигурации Homepage</p>
+          </div>
+        </div>
+        <div>
+          <span class="summary-icon">↺</span>
+          <div>
+            <strong>История изменений</strong>
+            <p>Копия файла перед каждым сохранением</p>
+          </div>
+        </div>
+        <div>
+          <span class="summary-icon green">✓</span>
+          <div>
+            <strong id="file-status">Загрузка…</strong>
+            <p id="file-detail">Проверяем конфигурацию</p>
+          </div>
+        </div>
+      </section>
+      <section class="editor-panel">
+        <div class="editor-toolbar">
+          <div class="tabs" role="tablist" aria-label="Режим редактора">
+            <button
+              id="visual-tab"
+              class="active"
+              role="tab"
+              aria-selected="true"
+            >
+              ▦ Визуальный редактор</button
+            ><button id="raw-tab" role="tab" aria-selected="false">
+              &lt;/&gt; YAML
+            </button>
+          </div>
+          <div class="toolbar-actions">
+            <button id="history" class="quiet">↺ <span>История</span></button
+            ><button id="download" class="quiet">↓ <span>Скачать</span></button>
+          </div>
+        </div>
+        <div class="editor-subbar">
+          <div class="search-wrap">
+            <span>⌕</span
+            ><input
+              id="search"
+              type="search"
+              placeholder="Найти параметр…"
+              aria-label="Найти параметр"
+            />
+          </div>
+          <div class="insert-actions">
+            <button id="appearance-open" class="quiet hidden">
+              ◫ Оформление и раскладка
+            </button>
+            <button id="background-import" class="quiet hidden">
+              ▧ Загрузить фон
+            </button>
+            <button id="icon-import" class="quiet hidden">
+              ▧ Загрузить иконку
+            </button>
+            <button id="library" class="quiet">▦ Каталог Homepage</button
+            ><button id="add-root" class="soft-button">
+              ＋ Добавить параметр
+            </button>
+          </div>
+        </div>
+        <div id="error" class="error hidden" role="alert"></div>
+        <div id="editor" class="editor-body" role="tabpanel"></div>
+        <div id="raw-pane" class="hidden">
+          <div class="code-caption">
+            <span id="raw-label">YAML · UTF-8</span
+            ><span>Комментарии и переменные Homepage поддерживаются</span>
+          </div>
+          <textarea
+            id="raw"
+            spellcheck="false"
+            aria-label="Исходный код конфигурации"
+          ></textarea>
+        </div>
+        <div class="editor-footer">
+          <span
+            ><span class="status-dot" id="dirty-dot"></span
+            ><span id="dirty-label">Нет несохранённых изменений</span></span
+          ><span>Ctrl / ⌘ + S — сохранить</span>
+        </div>
+      </section>
+      <div class="savebar">
+        <div>
+          <strong>Сохраняется только текущий файл</strong>
+          <p>После сохранения обновите Homepage кнопкой ↻ на его странице.</p>
+        </div>
+        <div>
+          <button id="reload" class="secondary">Сбросить</button
+          ><button id="review" class="secondary">Посмотреть изменения</button
+          ><button id="save" class="primary">
+            Сохранить изменения <span>↗</span>
+          </button>
+        </div>
+      </div>
+      <p class="bottom-note">
+        HOME PAGER <span>•</span> Независимая панель управления
+        <a href="https://gethomepage.dev" target="_blank" rel="noreferrer"
+          >Homepage ↗</a
+        >
+      </p>
+    </main>
+    <dialog id="dialog">
+      <div class="dialog-heading">
+        <div>
+          <h2 id="dialog-title"></h2>
+          <p id="dialog-description"></p>
+        </div>
+        <button id="dialog-close" class="icon-button" aria-label="Закрыть">
+          ×
+        </button>
+      </div>
+      <div id="dialog-body"></div>
+      <div id="dialog-actions"></div>
+    </dialog>
+    <div id="toast" class="toast hidden" role="status"></div>
+  </body>
+</html>

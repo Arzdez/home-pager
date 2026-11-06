@@ -1,0 +1,22 @@
+services:
+  home-pager:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8090:8090"
+    command: ["-conf", "/etc/home-pager.yaml"]
+    volumes:
+      - ./config:/config
+      - ./home-pager.docker.yaml:/etc/home-pager.yaml:ro
+    # In the Homepage service, mount this same host directory:
+    #   - ./config/images:/app/public/images:ro
+    #   - ./config/icons:/app/public/icons:ro
+    # Set to the UID:GID that owns your existing Homepage config directory.
+    user: "${PUID:-1000}:${PGID:-1000}"
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL

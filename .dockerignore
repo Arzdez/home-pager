@@ -1,0 +1,9 @@
+.tools
+.git
+config
+*.exe
+home-pager
+*.test
+.env
+home-pager.yaml
+node_modules
