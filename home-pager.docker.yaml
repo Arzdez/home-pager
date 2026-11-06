@@ -1,17 +1,12 @@
-# Container-side address: listen on all interfaces so published ports work.
 listen: "0.0.0.0:8090"
-# Homepage YAML/CSS/JS directory INSIDE the container.
 config_dir: "/config"
-# Empty means no authentication; a nonempty value enables HTTP Basic auth.
+# Empty disables HTTP Basic authentication.
 password: ""
-# Background storage and its URL prefix on Homepage (not the panel URL).
 images_dir: "/images"
 images_url: "/images"
-# Icon storage and its URL prefix on Homepage.
 icons_dir: "/icons"
 icons_url: "/icons"
-# Optional download proxies. Omit to inherit environment settings;
-# an explicit empty string disables the corresponding environment setting.
+# Omitted: inherit environment; empty: disable.
 # http_proxy: "http://proxy.example.com:3128"
 # https_proxy: "http://proxy.example.com:3128"
 # no_proxy: "localhost,127.0.0.1"

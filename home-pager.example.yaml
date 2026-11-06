@@ -1,19 +1,15 @@
-# Home Pager configuration. Copy to home-pager.yaml and edit the paths.
+# Paths are relative to this file; empty asset directories use config_dir subdirectories.
 listen: "0.0.0.0:8090"
 config_dir: "./config"
 
-# Empty password disables authentication on every listen address.
+# Empty disables HTTP Basic authentication.
 password: ""
 
-# Empty directories default to <config_dir>/images and <config_dir>/icons.
-# Relative paths are resolved from this configuration file's directory.
 images_dir: ""
 images_url: "/images"
 icons_dir: ""
 icons_url: "/icons"
-
-# Optional image download proxy settings. Omit to use the process environment.
-# An explicit empty string disables the corresponding environment setting.
+# Omitted: inherit environment; empty: disable.
 # https_proxy: "http://proxy.example.com:3128"
 # http_proxy: "http://proxy.example.com:3128"
 # no_proxy: "localhost,127.0.0.1"

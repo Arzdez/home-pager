@@ -100,7 +100,7 @@ function rememberPanelSection(name) {
   if (panelPreferences.rememberSection) {
     try {
       localStorage.setItem("home-pager.last-section", name);
-    } catch {}
+    } catch { }
   }
 }
 function preferredPanelSection(names) {
@@ -108,7 +108,7 @@ function preferredPanelSection(names) {
     try {
       const name = localStorage.getItem("home-pager.last-section");
       if (names.includes(name)) return name;
-    } catch {}
+    } catch { }
   }
   return "settings.yaml";
 }
