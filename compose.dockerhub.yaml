@@ -1,0 +1,59 @@
+# Run a published image:
+#   docker compose -f compose.dockerhub.yaml up -d
+# Replace your-dockerhub-user with the owner of the Docker Hub repository.
+services:
+  home-pager:
+    # Image on Docker Hub. Pin a version instead of latest for a fixed release.
+    image: your-dockerhub-user/home-pager:latest
+
+    # Restart after a crash or host reboot, unless stopped manually.
+    restart: unless-stopped
+
+    # HOST_PORT:CONTAINER_PORT. Access the panel at http://SERVER_IP:8090.
+    # Use "127.0.0.1:8090:8090" to expose it only on the Docker host.
+    ports:
+      - "8090:8090"
+
+    # Numeric user and group IDs. Match the owner of the Homepage directories.
+    # These values are substituted by Compose from .env or the host environment;
+    # they do not change file ownership or create users inside the container.
+    user: "${PUID:-1000}:${PGID:-1000}"
+
+    # Startup config inside the container. The image creates it from its built-in
+    # template on first launch; an existing file is never overwritten.
+    command: ["-conf", "/etc/home-pager/home-pager.yaml"]
+
+    # HOST_PATH_OR_VOLUME:CONTAINER_PATH. GUI paths refer to the container side.
+    # Bind paths below are relative to this Compose file.
+    volumes:
+      # Persistent startup config and its backups. Writable for GUI editing.
+      - panel-config:/etc/home-pager
+      # Existing Homepage YAML/CSS/JS files and configuration history.
+      - ./config:/config
+      # Downloaded/uploaded icons, also readable by Homepage.
+      - ./icons:/icons
+      # Downloaded background images, also readable by Homepage.
+      - ./images:/images
+
+    # Make the image filesystem read-only; mounted data volumes remain writable.
+    read_only: true
+    # Temporary files in memory; removed when the container stops.
+    tmpfs:
+      - /tmp
+    # Prevent processes from gaining additional privileges.
+    security_opt:
+      - no-new-privileges:true
+    # The panel does not need Linux capabilities or the Docker socket.
+    cap_drop:
+      - ALL
+
+# Compose creates this volume automatically. Recreating/updating a container
+# preserves it; `docker compose down -v` deletes it, including the startup config.
+volumes:
+  panel-config:
+# In your EXISTING Homepage service, mount the same host directories:
+# volumes:
+#   - ./config:/app/config
+#   - ./icons:/app/public/icons:ro
+#   - ./images:/app/public/images:ro
+# If Homepage uses a different Compose directory, use the same absolute host paths.

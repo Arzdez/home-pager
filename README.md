@@ -162,6 +162,11 @@ volumes:
 
 ## Docker
 
+Подробный пример с комментариями к каждому параметру:
+[compose.dockerhub.yaml](compose.dockerhub.yaml). Описание параметров, каталогов,
+прав доступа и обновления: [README.docker.md](README.docker.md) (на английском,
+можно использовать как описание Docker Hub).
+
 Панель запускается рядом с Homepage и получает **тот же каталог конфигурации**. Docker socket ей не нужен.
 
 ```sh
