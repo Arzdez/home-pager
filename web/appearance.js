@@ -575,26 +575,7 @@ async function openAppearance() {
     );
     const groupRows = make("div");
     groupSection.append(groupRows);
-    function renderGroups() {
-      groupRows.replaceChildren();
-      function rows(list, depth = 0) {
-        list.forEach((group, index) => {
-          const box = make("details", "appearance-group-control");
-          box.open = depth === 0;
-          box.dataset.groupPath = group.path.join(" / ");
-          const heading = make("summary", "", group.path.join(" / "));
-          const actions = make("span", "group-actions");
-          for (const [title, delta] of [
-            ["↑", -1],
-            ["↓", 1],
-          ]) {
-            const move = button(title, "", (ev) => {
-              ev.preventDefault();
-              report(() => {
-                [list[index], list[index + delta]] = [
-                  list[index + delta],
-                  list[index],
-                ];
+    function saveGroupOrder(list, group) {
                 const layout = appearanceLayout(
                     settings,
                     group.path.slice(0, -1),
@@ -616,6 +597,40 @@ async function openAppearance() {
                   if (!list.some((g) => g.name === layout.Content[i].Value))
                     entries.push(layout.Content[i], layout.Content[i + 1]);
                 layout.Content = entries;
+    }
+    function movePreviewGroup(list, group, target, after) {
+      if (group === target || !list.includes(group)) return;
+      report(() => {
+        const reordered = list.filter(item => item !== group);
+        reordered.splice(reordered.indexOf(target) + (after ? 1 : 0), 0, group);
+        saveGroupOrder(reordered, group);
+        list.splice(0, list.length, ...reordered);
+        renderGroups();
+        draw();
+      });
+    }
+    let previewDrag = null;
+    function renderGroups() {
+      groupRows.replaceChildren();
+      function rows(list, depth = 0) {
+        list.forEach((group, index) => {
+          const box = make("details", "appearance-group-control");
+          box.open = depth === 0;
+          box.dataset.groupPath = group.path.join(" / ");
+          const heading = make("summary", "", group.path.join(" / "));
+          const actions = make("span", "group-actions");
+          for (const [title, delta] of [
+            ["↑", -1],
+            ["↓", 1],
+          ]) {
+            const move = button(title, "", (ev) => {
+              ev.preventDefault();
+              report(() => {
+                [list[index], list[index + delta]] = [
+                  list[index + delta],
+                  list[index],
+                ];
+                saveGroupOrder(list, group);
                 renderGroups();
                 draw();
               });
@@ -867,6 +882,58 @@ async function openAppearance() {
             row = appearanceRead(layout, "style", "column") === "row";
           const box = make("section", "preview-group");
           box.dataset.name = group.name;
+          box.dataset.groupPath = JSON.stringify(group.path);
+          const toolbar = make("div", "preview-group-toolbar");
+          const handle = button("⠿ " + group.name, "preview-drag-handle", () => {});
+          box.draggable = true;
+          handle.title = t("Перетащите группу; стрелки ← → меняют порядок");
+          handle.setAttribute("aria-label", handle.title + ": " + group.name);
+          box.addEventListener("dragstart", (event) => {
+            event.stopPropagation();
+            previewDrag = { group, list };
+            event.dataTransfer.effectAllowed = "move";
+            event.dataTransfer.setData("text/plain", JSON.stringify(group.path));
+            box.classList.add("preview-dragging");
+          });
+          box.addEventListener("dragend", () => {
+            previewDrag = null;
+            preview.querySelectorAll(".preview-drop-before, .preview-drop-after, .preview-dragging").forEach(el => el.classList.remove("preview-drop-before", "preview-drop-after", "preview-dragging"));
+          });
+          handle.addEventListener("keydown", event => {
+            if (!["ArrowLeft", "ArrowRight"].includes(event.key)) return;
+            event.preventDefault();
+            const delta = event.key === "ArrowLeft" ? -1 : 1;
+            const target = list[list.indexOf(group) + delta];
+            if (!target) return;
+            movePreviewGroup(list, group, target, delta > 0);
+            [...preview.querySelectorAll(".preview-group")].find(el => el.dataset.groupPath === JSON.stringify(group.path))?.querySelector(".preview-drag-handle").focus();
+          });
+          const dropAfter = event => {
+            const rect = box.getBoundingClientRect();
+            return row ? event.clientY > rect.top + rect.height / 2 : event.clientX > rect.left + rect.width / 2;
+          };
+          box.addEventListener("dragover", event => {
+            event.stopPropagation();
+            if (!previewDrag || previewDrag.list !== list || previewDrag.group === group) return;
+            event.preventDefault();
+            event.dataTransfer.dropEffect = "move";
+            const after = dropAfter(event);
+            box.classList.toggle("preview-drop-before", !after);
+            box.classList.toggle("preview-drop-after", after);
+          });
+          box.addEventListener("dragleave", event => {
+            if (!box.contains(event.relatedTarget)) box.classList.remove("preview-drop-before", "preview-drop-after");
+          });
+          box.addEventListener("drop", event => {
+            event.stopPropagation();
+            if (!previewDrag || previewDrag.list !== list) return;
+            event.preventDefault();
+            movePreviewGroup(list, previewDrag.group, group, dropAfter(event));
+            previewDrag = null;
+          });
+          toolbar.append(handle);
+          box.append(toolbar);
+          box.classList.toggle("preview-group-wide", row);
           box.style.gridColumn = row ? "1 / -1" : "auto";
           if (appearanceRead(layout, "header", "true") !== "false")
             box.append(make("h4", "", group.name));

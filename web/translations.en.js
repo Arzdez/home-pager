@@ -2,6 +2,7 @@
 
 // UI copy only. Never translate user configuration values.
 const englishStrings = {
+  "Перетащите группу; стрелки ← → меняют порядок": "Drag the group; use ← → to reorder",
   "Добавить закладку": "Add bookmark",
   "＋ Добавить закладку": "＋ Add bookmark",
   "Укажите название группы или название и адрес закладки.":

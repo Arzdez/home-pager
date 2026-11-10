@@ -1902,3 +1902,18 @@ aside > * {
 .catalog-entry-added .template-card:disabled {
   opacity: 0.75;
 }
+
+/* Interactive layout preview */
+.preview-group { position: relative; min-width: 0; }
+.preview-group-toolbar { display: flex; margin-bottom: 6px; }
+.preview-drag-handle { cursor: grab; font: inherit; color: inherit; background: transparent; border: 1px dashed currentColor; border-radius: 5px; padding: 4px 8px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.preview-drag-handle:active { cursor: grabbing; }
+.preview-drag-handle:focus-visible { outline: 2px solid var(--preview-accent); }
+.preview-dragging { opacity: .45; }
+.preview-drop-before { box-shadow: -4px 0 0 var(--preview-accent); }
+.preview-drop-after { box-shadow: 4px 0 0 var(--preview-accent); }
+
+.preview-group[draggable="true"] { cursor: grab; }
+.preview-group[draggable="true"]:active { cursor: grabbing; }
+.preview-group-wide.preview-drop-before { box-shadow: 0 -4px 0 var(--preview-accent); }
+.preview-group-wide.preview-drop-after { box-shadow: 0 4px 0 var(--preview-accent); }
