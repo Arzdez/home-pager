@@ -964,7 +964,21 @@ test("appearance controls configure real groups and save native layout with mana
         .style.getPropertyValue("--preview-card-opacity"),
       "0.35",
     );
-    d.querySelector('[aria-label="Группа Infra: выше"]').click();
+    const previewOrder = () => [...d.querySelectorAll("#appearance-preview .preview-group")].map(el => el.dataset.name);
+    const source = d.querySelector('.preview-group[data-name="Infra"] .preview-service');
+    const target = d.querySelector('.preview-group[data-name="Media"]');
+    const transfer = { setData() {}, effectAllowed: "", dropEffect: "" };
+    for (const [element, name] of [[source, "dragstart"], [target, "dragover"], [target, "drop"]]) {
+      const event = new w.Event(name, { bubbles: true, cancelable: true });
+      Object.defineProperties(event, { dataTransfer: {value: transfer}, clientX: {value: -1}, clientY: {value: -1} });
+      element.dispatchEvent(event);
+    }
+    assert.deepEqual(previewOrder(), ["Infra", "Media"]);
+    assert.equal(readFileSync(join(dir, "settings.yaml"), "utf8"), initial);
+    d.querySelector('.preview-group[data-name="Infra"] .preview-drag-handle').dispatchEvent(new w.KeyboardEvent("keydown", {key: "ArrowRight", bubbles: true}));
+    assert.deepEqual(previewOrder(), ["Media", "Infra"]);
+    d.querySelector('.preview-group[data-name="Infra"] .preview-drag-handle').dispatchEvent(new w.KeyboardEvent("keydown", {key: "ArrowLeft", bubbles: true}));
+    assert.deepEqual(previewOrder(), ["Infra", "Media"]);
     click(w, "#dialog-actions .primary");
     assert.equal(
       readFileSync(join(dir, "settings.yaml"), "utf8"),
