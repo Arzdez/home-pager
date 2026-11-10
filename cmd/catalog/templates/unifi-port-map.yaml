@@ -1,0 +1,20 @@
+﻿widget:
+  type: customapi
+  url: https://unifi.example.com/proxy/network/api/s/default/stat/device/aa:bb:cc:dd:ee:ff
+  method: GET
+  headers:
+    X-API-KEY: "{{HOMEPAGE_VAR_UNIFI_API_KEY}}"
+    Accept: application/json
+  refreshInterval: 30000
+  display: block
+  mappings:
+    - field: data.0.port_table
+      label: Порты
+      format: size
+    - field: data.0.num_sta
+      label: Клиенты
+      format: number
+    - field: data.0.uplink.speed
+      label: Аплинк
+      format: float
+      suffix: " Мбит/с"

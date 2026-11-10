@@ -1,0 +1,22 @@
+widget:
+  type: customapi
+  url: https://unifi.example.com/proxy/network/api/s/default/stat/device/aa:bb:cc:dd:ee:ff
+  method: GET
+  headers:
+    X-API-KEY: "{{HOMEPAGE_VAR_UNIFI_API_KEY}}"
+    Accept: application/json
+  refreshInterval: 30000
+  display: block
+  mappings:
+    - field: "data.0.wan1.up"
+      label: "Состояние WAN"
+      format: "text"
+      remap: [{"value":true,"to":"Подключён"},{"value":false,"to":"Отключён"}]
+    - field: "data.0.wan1.availability"
+      label: "Доступность WAN"
+      format: "float"
+      suffix: "%"
+    - field: "data.0.wan1.speed"
+      label: "Скорость WAN"
+      format: "float"
+      suffix: " Mbps"

@@ -116,6 +116,14 @@ const labels = {
   quicklaunch: [t("Быстрый поиск"), t("Настройки быстрого запуска")],
   providers: [t("Провайдеры"), t("Общие ключи API для виджетов")],
   logpath: [t("Каталог логов"), t("Путь логов в процессе Homepage")],
+  disableCollapse: [t("Запретить сворачивание групп"), t("Блокирует сворачивание и раскрытие групп нажатием на заголовок")],
+  groupsInitiallyCollapsed: [t("Сворачивать все группы при открытии"), t("Начальное состояние отдельной группы имеет приоритет над этой настройкой")],
+  maxBookmarkGroupColumns: [t("Колонки групп закладок"), t("Максимальное число колонок групп закладок на широком экране — до 8")],
+  bookmarksStyle: [t("Вид закладок"), t("Отображение закладок: обычные карточки или только иконки")],
+  iconStyle: [t("Оформление иконок"), t("Градиентные иконки или одноцветные в цветах темы")],
+  pwa: [t("Установка Homepage как приложения"), t("Иконки и ярлыки установленного веб-приложения (PWA)")],
+  blockHighlights: [t("Цвета состояний показателей"), t("Оформление нормального, предупреждающего и критического уровней")],
+  volumes: [t("Тома Docker (Compose)"), t("Монтирование каталогов контейнера; задаётся в Docker Compose, а не в настройках Homepage")],
   href: [t("Адрес ссылки"), t("URL приложения или закладки")],
   icon: [t("Иконка"), t("Например: jellyfin.png или mdi-server")],
   widget: [
@@ -539,6 +547,7 @@ async function load(name, force = false) {
 }
 function install(d) {
   pendingAppearanceCSS = null;
+  inlineStretchFiles = null;
   current = d;
   rememberPanelSection(d.name);
   original = d.raw;
@@ -617,8 +626,10 @@ function renderMode() {
   document.querySelector(".search-wrap").classList.toggle("hidden", !visual);
   $("add-root").classList.toggle("hidden", !visual);
   $("library").classList.toggle("hidden", !visual || !libraryEntries().length);
+  $("editor-expansion-actions").classList.toggle("hidden", !visual);
   if (visual) renderTree();
   else $("raw").value = current.raw;
+  if (typeof renderHomepageExtras === "function") renderHomepageExtras();
 }
 async function switchMode(next) {
   if (!current || mode === next || (next === "visual" && isCode())) return;
@@ -881,6 +892,7 @@ function renderTree(resetExpansion = false) {
   }
   clearBlockDrag();
   prepareMovableGroups();
+  prepareEditorExpansion(resetExpansion);
   e.replaceChildren();
   const n = root();
   if (!n) return;
@@ -1061,6 +1073,8 @@ function isLayoutGroup(parent) {
 }
 function parameterTemplates(parent) {
   let examples = [];
+  const infoDefaults = typeof infoParameterDefaults === "function" ? infoParameterDefaults(parent) : null;
+  if (infoDefaults) examples = [node(infoDefaults)];
   if (
     current.name === "bookmarks.yaml" &&
     findIconTargets(current.tree).some((item) => item.target === parent)
@@ -1133,6 +1147,18 @@ function parameterTemplates(parent) {
     }
   return [...result.values()];
 }
+function appendSettingsFields(parent, ...entries) {
+  parent.Content ||= [];
+  parent.Content.push(...entries);
+  if (current.name !== "settings.yaml" || parent.Kind !== 4) return;
+  const fields = [], sections = [];
+  for (let i = 0; i < parent.Content.length; i += 2) {
+    const value = parent.Content[i + 1];
+    const container = value.Kind === 4 || value.Kind === 2 || (value.Kind === 16 && [4, 2].includes(value.Alias?.Kind));
+    (container ? sections : fields).push(parent.Content[i], value);
+  }
+  parent.Content = [...fields, ...sections];
+}
 function parameterDialog(parent) {
   const templates = parameterTemplates(parent);
   if (!templates.length) {
@@ -1148,11 +1174,37 @@ function parameterDialog(parent) {
   const search = field(t("Найти настройку"), make("input"));
   search.type = "search";
   const grid = make("div", "template-grid");
+  if (isLayoutGroup(parent)) {
+    const findPath = (map, path = []) => {
+      for (let i = 0; i < (map?.Content?.length || 0); i += 2) {
+        const child = map.Content[i + 1];
+        const next = [...path, map.Content[i].Value];
+        if (child === parent) return next;
+        if (child?.Kind === 4) {
+          const found = findPath(child, next);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    const path = findPath(mapValue(root(), "layout"));
+    const stretch = button("", "template-card", () => {
+      $("dialog").close();
+      blockOpenStates.set(parent, true);
+      renderTree();
+    });
+    stretch.dataset.parameter = "groupStretch flex grid";
+    stretch.append(
+      make("strong", "", t("Растягивать группу")),
+      make("small", "", t("Настроить ширину группы через custom.css")),
+    );
+    grid.append(stretch);
+  }
   for (const { key, value } of templates) {
     const exists = Boolean(mapValue(parent, key.Value));
     const b = button("", "template-card", () => {
       parent.Content ||= [];
-      parent.Content.push(structuredClone(key), structuredClone(value));
+      appendSettingsFields(parent, structuredClone(key), structuredClone(value));
       mark();
       $("dialog").close();
       renderTree();
@@ -1289,6 +1341,7 @@ function attachServiceWidget(service, widget, replace = false) {
 }
 
 function renderChildren(parent, container, depth) {
+  if (isLayoutGroup(parent)) renderInlineGroupStretch(parent, container);
   const content = parent.Content || [];
   if (
     current.name === "bookmarks.yaml" &&
@@ -1367,6 +1420,8 @@ function renderChildren(parent, container, depth) {
   appendGroupDropzone(parent, container);
 }
 function fieldChoices(name, parent) {
+  const infoChoices = typeof infoFieldChoices === "function" ? infoFieldChoices(name, parent) : null;
+  if (infoChoices) return infoChoices;
   if (mapValue(parent, "type")?.Value === "grafana") {
     if (name === "alerts")
       return [
@@ -1383,6 +1438,7 @@ function fieldChoices(name, parent) {
     return [
       ["_blank", t("В новой вкладке")],
       ["_self", t("В текущей вкладке")],
+      ["_parent", t("В родительском окне")],
       ["_top", t("В основном окне")],
     ];
   if (current.name !== "settings.yaml") return null;
@@ -1631,7 +1687,7 @@ function renderEntry(parent, index, name, value, container, depth, key) {
   if (value.Kind === 4 || value.Kind === 2) {
     const details = make("details", "tree-group");
     details.open =
-      blockOpenStates.get(value) ?? panelDefaultOpen(current.name, depth);
+      blockOpenStates.get(value) ?? savedEditorExpansion(value) ?? panelDefaultOpen(current.name, depth);
     const summary = make("summary");
     summary.append(make("span", "", labels[name]?.[0] || name));
     if (labels[name]) summary.append(make("code", "group-meta", name));
@@ -1646,6 +1702,7 @@ function renderEntry(parent, index, name, value, container, depth, key) {
         ),
       );
     const actions = make("span", "group-actions");
+    attachEditorExpansion(details, value, actions);
     attachBlockMovement(details, summary, actions, source);
     const duplicate = button("⧉", "duplicate-block", (ev) => {
       ev.preventDefault();
@@ -1769,6 +1826,7 @@ function renderEntry(parent, index, name, value, container, depth, key) {
       secret = /key|token|secret|password|authorization/i.test(name);
     const choices =
       (value.Tag === "!!str" ||
+        (current.name === "widgets.yaml" && value.Tag === "!!int") ||
         (grafana && name === "version" && value.Tag === "!!int") ||
         (isLayoutGroup(parent) &&
           name === "columns" &&
@@ -1845,6 +1903,13 @@ function renderEntry(parent, index, name, value, container, depth, key) {
           : t("Выключено");
       }
       mark();
+      if (name === "provider" && input.value === "custom" &&
+          typeof infoFieldContext === "function" &&
+          infoFieldContext(parent)?.type === "search" &&
+          infoFieldContext(parent)?.path.length === 0 && !mapValue(parent, "url")) {
+        appendSettingsFields(parent, scalar("url"), scalar(""));
+        renderTree();
+      }
     });
     control.append(input);
     if (bool)
@@ -2026,7 +2091,7 @@ function addDialog(parent) {
         v = node(structuredClone(settingDefaults[k]));
       else v = node(value.value);
       parent.Content ||= [];
-      if (parent.Kind === 4) parent.Content.push(scalar(k), v);
+      if (parent.Kind === 4) appendSettingsFields(parent, scalar(k), v);
       else parent.Content.push(v);
       mark();
       $("dialog").close();
@@ -2073,7 +2138,7 @@ function templates(parent) {
           );
           return;
         }
-        parent.Content.push(...n.Content);
+        appendSettingsFields(parent, ...n.Content);
       }
       mark();
       $("dialog").close();
@@ -2235,7 +2300,7 @@ function library({ serviceTarget = null, destinationGroup = null } = {}) {
           });
         }
         const config = node({
-          icon: entry.slug + ".png",
+          icon: (entry.slug.startsWith("unifi-") ? "unifi" : entry.slug) + ".png",
           href: "https://service.example.com",
         });
         config.Content.push(...n.Content);
@@ -2259,7 +2324,7 @@ function library({ serviceTarget = null, destinationGroup = null } = {}) {
           );
           return;
         }
-        r.Content.push(...n.Content);
+        appendSettingsFields(r, ...n.Content);
       }
       mark();
       $("dialog").close();
@@ -2268,6 +2333,7 @@ function library({ serviceTarget = null, destinationGroup = null } = {}) {
     });
     if (current.name === "services.yaml") {
       const aliases = {
+        "unifi-customapi": "unifi",
         proxmoxbackupserver: "proxmox",
         unifi: "unifi",
         truenas: "truenas",
@@ -2276,7 +2342,7 @@ function library({ serviceTarget = null, destinationGroup = null } = {}) {
         logoThumbnail(
           entry.title,
           "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/" +
-            encodeURIComponent(aliases[entry.slug] || entry.slug) +
+            encodeURIComponent(entry.slug.startsWith("unifi-") ? "unifi" : aliases[entry.slug] || entry.slug) +
             ".png",
         ),
       );

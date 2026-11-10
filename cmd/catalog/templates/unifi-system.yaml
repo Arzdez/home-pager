@@ -1,0 +1,22 @@
+﻿widget:
+  type: customapi
+  url: https://unifi.example.com/proxy/network/api/s/default/stat/device/aa:bb:cc:dd:ee:ff
+  method: GET
+  headers:
+    X-API-KEY: "{{HOMEPAGE_VAR_UNIFI_API_KEY}}"
+    Accept: application/json
+  display: block
+  refreshInterval: 30000
+  mappings:
+    - field: data.0.system-stats.cpu
+      label: "ЦП"
+      format: float
+      suffix: "%"
+    - field: data.0.system-stats.mem
+      label: "ОЗУ"
+      format: float
+      suffix: "%"
+    - field: data.0.uplink.latency
+      label: "Задержка WAN"
+      format: float
+      suffix: " ms"

@@ -1,0 +1,22 @@
+widget:
+  type: customapi
+  url: https://unifi.example.com/proxy/network/api/s/default/stat/device/aa:bb:cc:dd:ee:ff
+  method: GET
+  headers:
+    X-API-KEY: "{{HOMEPAGE_VAR_UNIFI_API_KEY}}"
+    Accept: application/json
+  refreshInterval: 30000
+  display: block
+  mappings:
+    - field: "data.0.uplink.rx_errors"
+      label: "Ошибки приёма"
+      format: "number"
+    - field: "data.0.uplink.tx_errors"
+      label: "Ошибки передачи"
+      format: "number"
+    - field: "data.0.uplink.rx_dropped"
+      label: "Отброшено RX"
+      format: "number"
+    - field: "data.0.uplink.tx_dropped"
+      label: "Отброшено TX"
+      format: "number"

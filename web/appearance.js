@@ -127,7 +127,70 @@ ${appearanceEnd}`
     : raw;
 }
 
-async function openAppearance() {
+const groupStretchPattern = /\/\* HOME-PAGER GROUP WIDTH START \*\/[\s\S]*?\/\* HOME-PAGER GROUP WIDTH END \*\//g;
+function groupStretchCSS(raw, rules) {
+  const entries = Object.entries(rules);
+  const block = entries.length ? "/* HOME-PAGER GROUP WIDTH START */\n/* rules: " + JSON.stringify(rules).replace(/\*/g, "\\u002a") + " */\n" + entries.map(([, name]) => {
+    const escaped = Array.from(name, char => "\\" + char.codePointAt(0).toString(16) + " ").join("");
+    const card = '.service[data-name="' + escaped + '"]';
+    return '.services-group:has(.services-list > ' + card + '):not(:has(.services-group ' + card + ')) { flex-grow: 0 !important; }';
+  }).join("\n") + "\n/* HOME-PAGER GROUP WIDTH END */" : "";
+  if (groupStretchPattern.test(raw)) { groupStretchPattern.lastIndex = 0; return raw.replace(groupStretchPattern, () => block); }
+  groupStretchPattern.lastIndex = 0;
+  return raw + (block ? "\n" + block + "\n" : "");
+}
+
+let inlineStretchFiles = null;
+async function renderInlineGroupStretch(parent, container) {
+  const row = make("div", "field-row");
+  container.append(row);
+  const file = current;
+  try {
+    inlineStretchFiles ||= Promise.all([api("/api/file?name=custom.css"), api("/api/file?name=services.yaml")]);
+    const [savedCSS, services] = await inlineStretchFiles;
+    if (current !== file || !row.isConnected) return;
+    const groups = appearanceGroups(services.tree);
+    const group = groups.find(g => appearanceLayout(root(), g.path) === parent);
+    const flatten = list => list.flatMap(g => [g, ...flatten(g.children)]);
+    const all = flatten(groups);
+    const anchor = group?.cards.find(card => all.filter(g => g.cards.some(c => c.name === card.name)).length === 1)?.name;
+    if (!anchor) { row.remove(); return; }
+    const key = JSON.stringify(group.path);
+    const readRules = raw => {
+      try { return JSON.parse(raw.match(groupStretchPattern)?.[0]?.match(/\/\* rules: (.+?) \*\//)?.[1] || "{}"); }
+      catch { return {}; }
+    };
+    const input = make("input");
+    input.type = "checkbox";
+    input.setAttribute("role", "switch");
+    input.className = "inline-group-stretch";
+    input.checked = !Object.hasOwn(readRules((pendingAppearanceCSS || savedCSS).raw), key);
+    input.disabled = appearanceRead(parent, "style", "column") === "row";
+    const label = make("label", "field-label");
+    label.append(make("strong", "", t("Растягивать группу")), make("small", "", t("Выключено — группа сохраняет ширину колонки. Включено — занимает свободное место в строке. Если включено у нескольких групп, они делят свободное место между собой. Если только у одной — весь остаток получает она.")));
+    input.id = "group-stretch-" + encodeURIComponent(key);
+    label.htmlFor = input.id;
+    input.setAttribute("aria-checked", String(input.checked));
+    const control = make("div", "field-input");
+    const state = make("span", "switch-state", input.checked ? t("Включено") : t("Выключено"));
+    control.append(input, state);
+    row.append(label, control);
+    input.addEventListener("change", () => {
+      input.setAttribute("aria-checked", String(input.checked));
+      state.textContent = input.checked ? t("Включено") : t("Выключено");
+      const css = pendingAppearanceCSS || savedCSS;
+      const rules = readRules(css.raw);
+      if (input.checked) delete rules[key]; else rules[key] = anchor;
+      pendingAppearanceCSS = { raw: groupStretchCSS(css.raw, rules), revision: css.revision, original: css.original ?? css.raw };
+      mark();
+    });
+  } catch (error) {
+    inlineStretchFiles = null;
+    row.textContent = error.message;
+  }
+}
+
+async function openAppearance(focusGroup = null) {
   if (busy || current?.name !== "settings.yaml") return;
   await run(async () => {
     validateVisualFields();
@@ -174,6 +237,35 @@ async function openAppearance() {
       for (const g of list) sorted(g.children, g.path);
     }
     sorted(groups);
+    let activePreviewTab = Array.isArray(focusGroup)
+      ? appearanceRead(appearanceLayout(settings, focusGroup), "tab", "") : "";
+    function previewTabs() {
+      const layout = mapValue(settings, "layout");
+      return [...new Set((layout?.Content || []).filter((_, i) => i % 2 !== 0)
+        .map(value => appearanceRead(value, "tab", "")).filter(Boolean))];
+    }
+    function visibleGroups(list) {
+      if (list !== groups) return list;
+      const tabs = previewTabs();
+      if (!tabs.includes(activePreviewTab)) activePreviewTab = tabs[0] || "";
+      return tabs.length ? list.filter(group => {
+        const tab = appearanceRead(appearanceLayout(settings, group.path), "tab", "");
+        return !tab || tab === activePreviewTab;
+      }) : list;
+    }
+    let noStretch = {};
+    try {
+      const saved = css.raw.match(groupStretchPattern)?.[0]?.match(/\/\* rules: (.+?) \*\//)?.[1];
+      if (saved) noStretch = JSON.parse(saved);
+    } catch { /* Ignore invalid control metadata. */ }
+    const allGroups = [];
+    const collectGroups = list => list.forEach(g => { allGroups.push(g); collectGroups(g.children); });
+    collectGroups(groups);
+    const stretchKey = group => JSON.stringify(group.path);
+    const stretchAnchor = group => !group.bookmarks && group.path.length === 1 && group.cards.find(card =>
+      allGroups.filter(g => !g.bookmarks && g.cards.some(c => c.name === card.name)).length === 1
+    )?.name;
+    noStretch = Object.fromEntries(allGroups.filter(g => Object.hasOwn(noStretch, stretchKey(g)) && stretchAnchor(g)).map(g => [stretchKey(g), stretchAnchor(g)]));
     let style = { opacity: 20, radius: 6, padding: 4, gap: 8 };
     const oldBlock = css.raw.match(appearancePattern)?.[0];
     let customEnabled = Boolean(oldBlock);
@@ -576,44 +668,63 @@ async function openAppearance() {
     const groupRows = make("div");
     groupSection.append(groupRows);
     function saveGroupOrder(list, group) {
-                const layout = appearanceLayout(
-                    settings,
-                    group.path.slice(0, -1),
-                    true,
-                  ),
-                  entries = [];
-                for (const sibling of list) {
-                  let value = mapValue(layout, sibling.name);
-                  if (!value) {
-                    appearanceSet(layout, sibling.name, {});
-                    value = mapValue(layout, sibling.name);
-                  }
-                  const i = layout.Content.findIndex(
-                    (n, j) => j % 2 === 0 && n.Value === sibling.name,
-                  );
-                  entries.push(layout.Content[i], value);
-                }
-                for (let i = 0; i < layout.Content.length; i += 2)
-                  if (!list.some((g) => g.name === layout.Content[i].Value))
-                    entries.push(layout.Content[i], layout.Content[i + 1]);
-                layout.Content = entries;
+      const layout = appearanceLayout(settings, group.path.slice(0, -1), true);
+      const names = new Set(), entries = [];
+      for (const sibling of list) {
+        if (names.has(sibling.name)) throw Error(t("Группы сервисов и закладок должны иметь разные названия"));
+        names.add(sibling.name);
+        let value = mapValue(layout, sibling.name);
+        if (!value) {
+          appearanceSet(layout, sibling.name, {});
+          value = mapValue(layout, sibling.name);
+        }
+        const index = layout.Content.findIndex((key, i) => i % 2 === 0 && key.Value === sibling.name);
+        entries.push(layout.Content[index], value);
+      }
+      for (let i = 0; i < layout.Content.length; i += 2)
+        if (!names.has(layout.Content[i].Value)) entries.push(layout.Content[i], layout.Content[i + 1]);
+      layout.Content = entries;
     }
     function movePreviewGroup(list, group, target, after) {
-      if (group === target || !list.includes(group)) return;
+      const visible = visibleGroups(list);
+      if (group === target || !visible.includes(group) || !visible.includes(target)) return;
       report(() => {
-        const reordered = list.filter(item => item !== group);
-        reordered.splice(reordered.indexOf(target) + (after ? 1 : 0), 0, group);
+        const moved = visible.filter(item => item !== group);
+        moved.splice(moved.indexOf(target) + (after ? 1 : 0), 0, group);
+        const visibleSet = new Set(visible);
+        let index = 0;
+        const reordered = list.map(item => visibleSet.has(item) ? moved[index++] : item);
         saveGroupOrder(reordered, group);
         list.splice(0, list.length, ...reordered);
         renderGroups();
         draw();
       });
     }
+    function movePreviewTab(tab, target, after) {
+      const tabs = previewTabs();
+      if (tab === target || !tabs.includes(tab) || !tabs.includes(target)) return;
+      report(() => {
+        const order = tabs.filter(value => value !== tab);
+        order.splice(order.indexOf(target) + (after ? 1 : 0), 0, tab);
+        const layout = mapValue(settings, "layout"), entries = [];
+        for (let i = 0; i < layout.Content.length; i += 2)
+          entries.push([layout.Content[i], layout.Content[i + 1]]);
+        const tagged = entries.filter(([, value]) => appearanceRead(value, "tab", ""));
+        tagged.sort((a, b) => order.indexOf(appearanceRead(a[1], "tab", "")) - order.indexOf(appearanceRead(b[1], "tab", "")));
+        let index = 0;
+        layout.Content = entries.flatMap(entry => appearanceRead(entry[1], "tab", "") ? tagged[index++] : entry);
+        sorted(groups);
+        renderGroups();
+        draw();
+      });
+    }
+    let previewTabDrag = null;
     let previewDrag = null;
     function renderGroups() {
       groupRows.replaceChildren();
       function rows(list, depth = 0) {
-        list.forEach((group, index) => {
+        const visible = visibleGroups(list);
+        visible.forEach((group, index) => {
           const box = make("details", "appearance-group-control");
           box.open = depth === 0;
           box.dataset.groupPath = group.path.join(" / ");
@@ -625,17 +736,10 @@ async function openAppearance() {
           ]) {
             const move = button(title, "", (ev) => {
               ev.preventDefault();
-              report(() => {
-                [list[index], list[index + delta]] = [
-                  list[index + delta],
-                  list[index],
-                ];
-                saveGroupOrder(list, group);
-                renderGroups();
-                draw();
-              });
+              ev.stopPropagation();
+              movePreviewGroup(list, group, visible[index + delta], delta > 0);
             });
-            move.disabled = index + delta < 0 || index + delta >= list.length;
+            move.disabled = index + delta < 0 || index + delta >= visible.length;
             move.setAttribute(
               "aria-label",
               t("Группа ") +
@@ -673,6 +777,19 @@ async function openAppearance() {
             ),
             null,
           );
+          const stretch = make("input");
+          stretch.type = "checkbox";
+          stretch.className = "appearance-group-stretch";
+          stretch.checked = !Object.hasOwn(noStretch, stretchKey(group));
+          stretch.disabled = !stretchAnchor(group) || location.value === "row";
+          control(body, t("Растягивать группу"), stretch, null,
+            t("Выключено — группа сохраняет ширину колонки. Включено — занимает свободное место в строке. Если включено у нескольких групп, они делят свободное место между собой. Если только у одной — весь остаток получает она."));
+          stretch.title = t("Для вертикальной группы сервисов с уникальным именем карточки. Применяется через custom.css.");
+          stretch.addEventListener("change", () => {
+            if (stretch.checked) delete noStretch[stretchKey(group)];
+            else noStretch[stretchKey(group)] = stretchAnchor(group);
+            draw();
+          });
           columns.className = "appearance-group-columns";
           columns.disabled = location.value !== "row";
           const header = make("input");
@@ -683,7 +800,7 @@ async function openAppearance() {
           const collapsed = make("input");
           collapsed.type = "checkbox";
           collapsed.checked =
-            appearanceRead(layout, "initiallyCollapsed", "false") === "true";
+            appearanceRead(layout, "initiallyCollapsed", appearanceRead(settings, "groupsInitiallyCollapsed", "false")) === "true";
           control(body, t("Свернуть при открытии страницы"), collapsed, null);
           collapsed.disabled = !header.checked;
           const tab = control(
@@ -704,6 +821,7 @@ async function openAppearance() {
             });
           location.addEventListener("change", () => {
             columns.disabled = location.value !== "row";
+            stretch.disabled = !stretchAnchor(group) || location.value === "row";
             change("style", location.value);
             if (location.value === "row")
               change("columns", Number(columns.value));
@@ -731,6 +849,7 @@ async function openAppearance() {
               draw();
             }),
           );
+          tab.addEventListener("change", () => { renderGroups(); draw(); });
           rows(group.children, depth + 1);
         });
       }
@@ -862,22 +981,76 @@ async function openAppearance() {
           info.append(make("span", "", item.Content[0].Value));
       }
       if (info.children.length) canvas.append(info);
-      const tabs = [
-        ...new Set(
-          groups
-            .map((g) =>
-              appearanceRead(appearanceLayout(settings, g.path), "tab", ""),
-            )
-            .filter(Boolean),
-        ),
-      ];
-      if (tabs.length)
-        canvas.append(make("div", "preview-tabs", tabs.join("  ·  ")));
-      function drawGroups(list, parent) {
+      const shown = visibleGroups(groups);
+      const tabs = previewTabs();
+      if (tabs.length) {
+        const navigation = make("div", "preview-tabs");
+        navigation.setAttribute("role", "tablist");
+        navigation.setAttribute("aria-label", t("Вкладки Homepage"));
+        for (const tab of tabs) {
+          const tabControl = make("span", "preview-tab-control");
+          const item = button(tab, "preview-tab", () => {
+            activePreviewTab = tab;
+            renderGroups();
+            draw();
+          });
+          item.dataset.previewTab = tab;
+          item.setAttribute("role", "tab");
+          item.setAttribute("aria-selected", String(tab === activePreviewTab));
+          item.draggable = true;
+          item.title = t("Перетащите вкладку или используйте стрелки для изменения порядка");
+          item.addEventListener("dragstart", event => {
+            previewTabDrag = tab;
+            if (event.dataTransfer) {
+              event.dataTransfer.effectAllowed = "move";
+              event.dataTransfer.setData("text/plain", tab);
+            }
+          });
+          item.addEventListener("dragend", () => {
+            previewTabDrag = null;
+            navigation.querySelectorAll(".preview-tab-drop").forEach(el => el.classList.remove("preview-tab-drop"));
+          });
+          tabControl.addEventListener("dragover", event => {
+            if (!previewTabDrag || previewTabDrag === tab) return;
+            event.preventDefault();
+            if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
+            navigation.querySelectorAll(".preview-tab-drop").forEach(el => el.classList.remove("preview-tab-drop"));
+            tabControl.classList.add("preview-tab-drop");
+          });
+          tabControl.addEventListener("dragleave", event => {
+            if (!tabControl.contains(event.relatedTarget)) tabControl.classList.remove("preview-tab-drop");
+          });
+          tabControl.addEventListener("drop", event => {
+            if (!previewTabDrag) return;
+            event.preventDefault();
+            const rect = tabControl.getBoundingClientRect();
+            movePreviewTab(previewTabDrag, tab, event.clientX > rect.left + rect.width / 2);
+            previewTabDrag = null;
+          });
+          tabControl.append(item);
+          for (const [label, delta] of [["←", -1], ["→", 1]]) {
+            const target = tabs[tabs.indexOf(tab) + delta];
+            const move = button(label, "preview-tab-move", () => movePreviewTab(tab, target, delta > 0));
+            move.disabled = !target;
+            move.dataset.move = delta < 0 ? "before" : "after";
+            move.title = t("Переместить вкладку") + ": " + tab + " " + label;
+            move.setAttribute("aria-label", move.title);
+            tabControl.append(move);
+          }
+          navigation.append(tabControl);
+        }
+        canvas.append(navigation);
+      }
+      function drawGroups(list, parent, parentLayout = null) {
         const grid = make("div", "preview-groups");
-        grid.style.gridTemplateColumns = `repeat(${appearanceBound(groupColumns.value, 1, 8, 4)},minmax(0,1fr))`;
+        const columns = appearanceBound(groupColumns.value, 1, 8, 4);
+        grid.style.setProperty("--preview-group-columns", columns);
+        if (parentLayout) {
+          grid.classList.add("preview-subgroups");
+          grid.style.gridTemplateColumns = `repeat(${appearanceRead(parentLayout, "style", "column") === "row" ? appearanceBound(appearanceRead(parentLayout, "columns", "3"), 1, 8, 3) : 1},minmax(0,1fr))`;
+        }
         parent.append(grid);
-        for (const group of list) {
+        for (const group of visibleGroups(list)) {
           const layout = appearanceLayout(settings, group.path),
             row = appearanceRead(layout, "style", "column") === "row";
           const box = make("section", "preview-group");
@@ -886,13 +1059,16 @@ async function openAppearance() {
           const toolbar = make("div", "preview-group-toolbar");
           const handle = button("⠿ " + group.name, "preview-drag-handle", () => {});
           box.draggable = true;
+          handle.draggable = true;
           handle.title = t("Перетащите группу; стрелки ← → меняют порядок");
           handle.setAttribute("aria-label", handle.title + ": " + group.name);
           box.addEventListener("dragstart", (event) => {
             event.stopPropagation();
             previewDrag = { group, list };
-            event.dataTransfer.effectAllowed = "move";
-            event.dataTransfer.setData("text/plain", JSON.stringify(group.path));
+            if (event.dataTransfer) {
+              event.dataTransfer.effectAllowed = "move";
+              event.dataTransfer.setData("text/plain", JSON.stringify(group.path));
+            }
             box.classList.add("preview-dragging");
           });
           box.addEventListener("dragend", () => {
@@ -900,23 +1076,28 @@ async function openAppearance() {
             preview.querySelectorAll(".preview-drop-before, .preview-drop-after, .preview-dragging").forEach(el => el.classList.remove("preview-drop-before", "preview-drop-after", "preview-dragging"));
           });
           handle.addEventListener("keydown", event => {
-            if (!["ArrowLeft", "ArrowRight"].includes(event.key)) return;
+            if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) return;
             event.preventDefault();
-            const delta = event.key === "ArrowLeft" ? -1 : 1;
-            const target = list[list.indexOf(group) + delta];
+            const delta = ["ArrowLeft", "ArrowUp"].includes(event.key) ? -1 : 1;
+            const visible = visibleGroups(list);
+            const target = visible[visible.indexOf(group) + delta];
             if (!target) return;
             movePreviewGroup(list, group, target, delta > 0);
             [...preview.querySelectorAll(".preview-group")].find(el => el.dataset.groupPath === JSON.stringify(group.path))?.querySelector(".preview-drag-handle").focus();
           });
           const dropAfter = event => {
             const rect = box.getBoundingClientRect();
-            return row ? event.clientY > rect.top + rect.height / 2 : event.clientX > rect.left + rect.width / 2;
+            const source = [...preview.querySelectorAll(".preview-group")].find(item => item.dataset.groupPath === JSON.stringify(previewDrag?.group.path));
+            const from = source?.getBoundingClientRect();
+            const differentRow = from && Math.abs(from.top - rect.top) > Math.min(from.height, rect.height) / 2;
+            return row || differentRow ? event.clientY > rect.top + rect.height / 2 : event.clientX > rect.left + rect.width / 2;
           };
           box.addEventListener("dragover", event => {
-            event.stopPropagation();
             if (!previewDrag || previewDrag.list !== list || previewDrag.group === group) return;
+            event.stopPropagation();
             event.preventDefault();
-            event.dataTransfer.dropEffect = "move";
+            if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
+            preview.querySelectorAll(".preview-drop-before, .preview-drop-after").forEach(item => item.classList.remove("preview-drop-before", "preview-drop-after"));
             const after = dropAfter(event);
             box.classList.toggle("preview-drop-before", !after);
             box.classList.toggle("preview-drop-after", after);
@@ -925,15 +1106,29 @@ async function openAppearance() {
             if (!box.contains(event.relatedTarget)) box.classList.remove("preview-drop-before", "preview-drop-after");
           });
           box.addEventListener("drop", event => {
-            event.stopPropagation();
             if (!previewDrag || previewDrag.list !== list) return;
+            event.stopPropagation();
             event.preventDefault();
             movePreviewGroup(list, previewDrag.group, group, dropAfter(event));
             previewDrag = null;
           });
           toolbar.append(handle);
+          for (const [title, delta] of [["↑", -1], ["↓", 1]]) {
+            const visible = visibleGroups(list);
+            const target = visible[visible.indexOf(group) + delta];
+            const move = button(title, "preview-group-move", event => {
+              event.preventDefault(); event.stopPropagation();
+              movePreviewGroup(list, group, target, delta > 0);
+            });
+            move.disabled = !target;
+            move.dataset.move = delta < 0 ? "before" : "after";
+            move.title = t("Группа ") + group.name + ": " + (delta < 0 ? t("выше") : t("ниже"));
+            move.setAttribute("aria-label", move.title);
+            toolbar.append(move);
+          }
           box.append(toolbar);
           box.classList.toggle("preview-group-wide", row);
+          if (!row && Object.hasOwn(noStretch, stretchKey(group))) box.style.flexGrow = "0";
           box.style.gridColumn = row ? "1 / -1" : "auto";
           if (appearanceRead(layout, "header", "true") !== "false")
             box.append(make("h4", "", group.name));
@@ -942,7 +1137,7 @@ async function openAppearance() {
           box.append(cards);
           grid.append(box);
           if (
-            appearanceRead(layout, "initiallyCollapsed", "false") === "true"
+            appearanceRead(layout, "initiallyCollapsed", appearanceRead(settings, "groupsInitiallyCollapsed", "false")) === "true"
           ) {
             box.append(make("p", "preview-empty", t("Группа свёрнута")));
             continue;
@@ -985,17 +1180,30 @@ async function openAppearance() {
           }
           if (!group.cards.length && !group.children.length)
             cards.append(make("p", "preview-empty", t("Пустая группа")));
-          if (group.children.length) drawGroups(group.children, box);
+          if (group.children.length) drawGroups(group.children, box, layout || node({}));
         }
       }
       drawGroups(groups, canvas);
-      if (!groups.length)
+      if (!shown.length)
         canvas.append(
           make("p", "preview-empty", t("Здесь появятся ваши группы и сервисы")),
         );
     }
     renderGroups();
     draw();
+    if (Array.isArray(focusGroup)) {
+      const target = [...groupRows.querySelectorAll(".appearance-group-control")]
+        .find(el => el.dataset.groupPath === focusGroup.join(" / "));
+      if (target) {
+        target.open = true;
+        target.scrollIntoView?.({ block: "center" });
+        const toggle = target.querySelector(".appearance-group-stretch");
+        if (toggle?.disabled) {
+          error.textContent = toggle.title;
+          error.classList.remove("hidden");
+        } else toggle?.focus({ preventScroll: true });
+      }
+    }
     $("dialog-actions").append(
       button(t("Отмена"), "secondary", () => $("dialog").close()),
       button(t("Применить к черновику"), "primary", () =>
@@ -1007,7 +1215,7 @@ async function openAppearance() {
             for (const key of ["blur", "brightness", "saturate"])
               appearanceRemove(background, key);
           } else appearanceRemove(settings, "cardBlur");
-          const cssRaw = appearanceCSS(css.raw, style, customEnabled);
+          const cssRaw = groupStretchCSS(appearanceCSS(css.raw, style, customEnabled), noStretch);
           if (cssRaw !== css.raw || pendingAppearanceCSS)
             pendingAppearanceCSS = {
               raw: cssRaw,

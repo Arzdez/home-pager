@@ -1,0 +1,23 @@
+widget:
+  type: customapi
+  url: https://unifi.example.com/proxy/network/api/s/default/stat/device/aa:bb:cc:dd:ee:ff
+  method: GET
+  headers:
+    X-API-KEY: "{{HOMEPAGE_VAR_UNIFI_API_KEY}}"
+    Accept: application/json
+  refreshInterval: 30000
+  display: block
+  mappings:
+    - field: "data.0.radio_table_stats.0.channel"
+      label: "Канал"
+      format: "number"
+    - field: "data.0.radio_table_stats.0.num_sta"
+      label: "Клиенты"
+      format: "number"
+    - field: "data.0.radio_table_stats.0.cu_total"
+      label: "Загрузка эфира"
+      format: "float"
+      suffix: "%"
+    - field: "data.0.radio_table_stats.0.tx_retries"
+      label: "Повторные передачи"
+      format: "number"

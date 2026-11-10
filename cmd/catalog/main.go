@@ -3,6 +3,7 @@
 package main
 
 import (
+	"embed"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -25,6 +26,9 @@ type entry struct {
 
 var blocks = regexp.MustCompile("(?ms)^```ya?ml[^\n]*\n(.*?)^```")
 var title = regexp.MustCompile(`(?m)^title:\s*(.+)$`)
+
+//go:embed templates/*.yaml
+var customTemplates embed.FS
 
 func main() {
 	source := flag.String("source", "", "Homepage source checkout")
@@ -106,6 +110,10 @@ func main() {
 		if yaml.Unmarshal(raw, &n) != nil || len(n.Content) == 0 || n.Content[0].Kind != yaml.MappingNode {
 			continue
 		}
+		// The settings guide includes a Docker Compose mount example, not a Homepage setting.
+		if len(n.Content[0].Content) == 2 && n.Content[0].Content[0].Value == "volumes" {
+			continue
+		}
 		keys := []string{}
 		for i, k := range n.Content[0].Content {
 			if i%2 == 0 {
@@ -114,6 +122,29 @@ func main() {
 		}
 		label := strings.Join(keys, ", ")
 		settings = append(settings, entry{label, label, "https://gethomepage.dev/configs/settings/", string(raw), &n})
+	}
+	for _, template := range []struct{ File, Title, Slug string }{
+		{"unifi-system.yaml", "UniFi Gateway · Custom API", "unifi-customapi"},
+		{"unifi-traffic.yaml", "UniFi Gateway · Custom API", "unifi-customapi"},
+		{"unifi-wan-health.yaml", "UniFi WAN Health · Custom API", "unifi-wan-health"},
+		{"unifi-uplink-errors.yaml", "UniFi Uplink Errors · Custom API", "unifi-uplink-errors"},
+		{"unifi-device-system.yaml", "UniFi Device · Custom API", "unifi-device-customapi"},
+		{"unifi-device-overview.yaml", "UniFi Device · Custom API", "unifi-device-customapi"},
+		{"unifi-device-diagnostics.yaml", "UniFi Device · Custom API", "unifi-device-customapi"},
+		{"unifi-wifi-24.yaml", "UniFi Wi-Fi · Custom API", "unifi-wifi-customapi"},
+		{"unifi-wifi-5.yaml", "UniFi Wi-Fi · Custom API", "unifi-wifi-customapi"},
+		{"unifi-port.yaml", "UniFi Ports · Custom API", "unifi-ports-customapi"},
+		{"unifi-port-map.yaml", "UniFi · Схема портов", "unifi-port-map"},
+	} {
+		raw, err := customTemplates.ReadFile("templates/" + template.File)
+		if err != nil {
+			log.Fatal(err)
+		}
+		var tree yaml.Node
+		if err := yaml.Unmarshal(raw, &tree); err != nil {
+			log.Fatal(err)
+		}
+		catalog["services"] = append(catalog["services"].([]entry), entry{template.Title, template.Slug, "/unifi-customapi.html", string(raw), &tree})
 	}
 	catalog["settings"] = settings
 	data, err := json.Marshal(catalog)

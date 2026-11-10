@@ -54,6 +54,7 @@ async function setup(
   preferences = null,
   systemDark = false,
   lastSection = null,
+  storage = null,
 ) {
   const dom = new JSDOM(readFileSync("web/index.html", "utf8"), {
     url: base,
@@ -61,6 +62,7 @@ async function setup(
     pretendToBeVisual: true,
   });
   const w = dom.window;
+  for (const [key,value] of Object.entries(storage || {})) w.localStorage.setItem(key,value);
   w.fetch = (path, opts) => fetch(new URL(path, base), opts);
   w.structuredClone = structuredClone;
   w.confirm = () => true;
@@ -96,6 +98,10 @@ async function setup(
   new Script(readFileSync("web/app.js", "utf8")).runInContext(
     dom.getInternalVMContext(),
   );
+  new Script(readFileSync("web/editor-expansion.js", "utf8")).runInContext(dom.getInternalVMContext());
+  new Script(readFileSync("web/info-fields.js", "utf8")).runInContext(dom.getInternalVMContext());
+  new Script(readFileSync("web/homepage-extras.js", "utf8")).runInContext(dom.getInternalVMContext());
+  new Script(readFileSync("web/unifi-ports.js", "utf8")).runInContext(dom.getInternalVMContext());
   new Script(readFileSync("web/appearance.js", "utf8")).runInContext(
     dom.getInternalVMContext(),
   );
@@ -764,7 +770,7 @@ test("named widgets render as one card while keeping valid YAML, comments and li
     const search = block(w, "search");
     assert.equal(search.querySelectorAll("details.tree-group").length, 0);
     assert.equal(search.querySelectorAll(".field-row").length, 2);
-    const provider = block(w, "provider").querySelector("input");
+    const provider = block(w, "provider").querySelector("select");
     type(w, provider, "google");
     moveButton(search, "ниже").click();
     click(w, "#save");
@@ -944,6 +950,11 @@ test("appearance controls configure real groups and save native layout with mana
       "No reference-specific preset should be injected",
     );
     change(d.getElementById("appearance-theme"), "dark");
+    const infraStretch = d.querySelector('[data-group-path="Infra"] .appearance-group-stretch');
+    assert.equal(infraStretch.checked, true);
+    assert.equal(infraStretch.disabled, false);
+    change(infraStretch, false);
+    assert.equal(d.querySelector('.preview-group[data-name="Infra"]').style.flexGrow, "0");
     const media = d.querySelector('[data-group-path="Media"]');
     change(media.querySelector(".appearance-group-columns"), "3");
     change(media.querySelector(".appearance-group-header"), false);
@@ -967,6 +978,14 @@ test("appearance controls configure real groups and save native layout with mana
     const previewOrder = () => [...d.querySelectorAll("#appearance-preview .preview-group")].map(el => el.dataset.name);
     const source = d.querySelector('.preview-group[data-name="Infra"] .preview-service');
     const target = d.querySelector('.preview-group[data-name="Media"]');
+    const groupGrid = target.parentElement;
+    const previewStyles = d.createElement("style");
+    previewStyles.textContent = await (await fetch(base + "/style.css")).text();
+    d.head.append(previewStyles);
+    assert.equal(w.getComputedStyle(groupGrid).display, "flex");
+    assert.equal(w.getComputedStyle(groupGrid).flexWrap, "wrap");
+    assert.equal(w.getComputedStyle(target).flexBasis, "100%");
+    assert.equal(w.getComputedStyle(d.querySelector('.preview-group[data-name="Infra"]')).flexGrow, "0");
     const transfer = { setData() {}, effectAllowed: "", dropEffect: "" };
     for (const [element, name] of [[source, "dragstart"], [target, "dragover"], [target, "drop"]]) {
       const event = new w.Event(name, { bubbles: true, cancelable: true });
@@ -1003,6 +1022,9 @@ test("appearance controls configure real groups and save native layout with mana
     assert.ok(settings.indexOf("Infra:") < settings.indexOf("Media:"));
     assert.ok(css.startsWith(personalCSS));
     assert.match(css, /HOME-PAGER APPEARANCE START/);
+    assert.match(css, /HOME-PAGER GROUP WIDTH START/);
+    assert.match(css, /flex-grow: 0 !important/);
+    assert.ok(!settings.includes("stretch"), "Panel option must not leak into Homepage YAML");
     assert.match(css, /rgba\(20,32,48,0.35\)/);
     assert.equal((css.match(/HOME-PAGER APPEARANCE START/g) || []).length, 1);
     assert.match(
@@ -1013,6 +1035,9 @@ test("appearance controls configure real groups and save native layout with mana
     click(w, "#appearance-open");
     await idle(w);
     assert.equal(d.getElementById("appearance-card-opacity").value, "35");
+    assert.equal(d.querySelector('[data-group-path="Infra"] .appearance-group-stretch').checked, false);
+    change(d.querySelector('[data-group-path="Infra"] .appearance-group-stretch'), true);
+    assert.equal(d.querySelector('.preview-group[data-name="Infra"]').style.flexGrow, "");
     change(d.getElementById("appearance-theme"), "light");
     type(w, d.getElementById("appearance-card-opacity"), "55");
     click(w, "#dialog-actions .primary");
@@ -1032,6 +1057,153 @@ test("appearance controls configure real groups and save native layout with mana
   } finally {
     dom.window.close();
   }
+});
+
+test("preview tabs filter groups and reorder visible siblings without losing other tabs or nested layout", async () => {
+  const initial = `# preserve layout
+groupsInitiallyCollapsed: true
+layout:
+  A: {style: row, tab: Main, initiallyCollapsed: false, icon: mdi-server}
+  X: {style: row, tab: Unifi, columns: 2}
+  B:
+    style: row
+    tab: Main
+    initiallyCollapsed: false
+    Child1: {style: column, initiallyCollapsed: false}
+    Child2: {style: column, initiallyCollapsed: false}
+  Y: {style: row, tab: Unifi, initiallyCollapsed: false}
+  Shared: {style: column, initiallyCollapsed: false}
+  Orphan: {tab: Unifi, header: false}
+`;
+  const services = `- A:
+    - Alpha: {href: https://a.example}
+- X:
+    - Xray: {href: https://x.example}
+- B:
+    - Child1:
+        - One: {href: https://one.example}
+    - Child2:
+        - Two: {href: https://two.example}
+- Y:
+    - Yankee: {href: https://y.example}
+- Shared:
+    - Common: {href: https://common.example}
+`;
+  writeFileSync(join(dir, "settings.yaml"), initial);
+  writeFileSync(join(dir, "services.yaml"), services);
+  writeFileSync(join(dir, "bookmarks.yaml"), "[]\n");
+  writeFileSync(join(dir, "custom.css"), "");
+  const dom = await setup(), w = dom.window, d = w.document;
+  const group = name => d.querySelector(`.preview-group[data-name="${name}"]`);
+  const roots = () => [...d.querySelectorAll("#appearance-preview > .preview-canvas > .preview-groups > .preview-group")].map(el => el.dataset.name);
+  const order = () => [...d.querySelectorAll("#appearance-preview .preview-group")].filter(el => !el.parentElement.classList.contains("preview-subgroups")).map(el => el.dataset.name);
+  const drag = (source, target) => {
+    const transfer = {setData() {}};
+    for (const [el, name] of [[source, "dragstart"], [target, "dragover"], [target, "drop"]]) {
+      const event = new w.Event(name, {bubbles: true, cancelable: true});
+      Object.defineProperties(event, {dataTransfer: {value: transfer}, clientX: {value: -1}, clientY: {value: -1}});
+      el.dispatchEvent(event);
+    }
+  };
+  try {
+    click(w, "#appearance-open"); await idle(w);
+    assert.deepEqual(order(), ["A", "B", "Shared"]);
+    assert.equal(d.querySelector('.preview-tab[aria-selected="true"]').textContent, "Main");
+    assert.equal(group("X"), null);
+    assert.equal(d.querySelector('[data-group-path="X"]'), null);
+    assert.equal(group("A").querySelector(".preview-drag-handle").draggable, true);
+    group("A").querySelector('[data-move="after"]').click();
+    assert.deepEqual(order(), ["B", "A", "Shared"]);
+    // Child drops must not swallow a root drag; it bubbles to its parent group.
+    drag(group("A").querySelector(".preview-drag-handle"), group("Child1"));
+    assert.deepEqual(order(), ["A", "B", "Shared"]);
+    group("A").querySelector('[data-move="after"]').click();
+    group("Child2").querySelector('[data-move="before"]').click();
+    assert.deepEqual([...group("B").querySelectorAll(".preview-subgroups > .preview-group")].map(el => el.dataset.name), ["Child2", "Child1"]);
+    click(w, '[data-preview-tab="Unifi"]');
+    assert.deepEqual(order(), ["X", "Y", "Shared"]);
+    assert.equal(group("X").querySelector(".preview-service"), null, "Global initial collapse applies without a group override");
+    assert.ok(group("Y").querySelector(".preview-service"), "Local false overrides the global collapse");
+    drag(group("Y"), group("X"));
+    assert.deepEqual(order(), ["Y", "X", "Shared"]);
+    click(w, '[data-preview-tab="Main"]');
+    assert.deepEqual(order(), ["B", "A", "Shared"]);
+    assert.equal(readFileSync(join(dir, "settings.yaml"), "utf8"), initial);
+    click(w, "#dialog-actions .primary");
+    click(w, "#save"); await idle(w);
+    const saved = readFileSync(join(dir, "settings.yaml"), "utf8");
+    const topKeys = [...saved.matchAll(/^  ([\w]+):/gm)].map(match => match[1]);
+    assert.deepEqual(topKeys, ["B", "Y", "A", "X", "Shared", "Orphan"]);
+    assert.ok(saved.indexOf("Child2:") < saved.indexOf("Child1:"));
+    assert.match(saved, /# preserve layout/);
+    assert.match(saved, /icon: mdi-server/);
+    assert.match(saved, /columns: 2/);
+    assert.match(saved, /Orphan:[\s\S]*header: false/);
+    assert.equal(readFileSync(join(dir, "services.yaml"), "utf8"), services);
+    click(w, "#appearance-open"); await idle(w);
+    assert.deepEqual(order(), ["B", "A", "Shared"]);
+    click(w, '[data-preview-tab="Unifi"]');
+    assert.deepEqual(order(), ["Y", "X", "Shared"]);
+    group("Y").querySelector('[data-move="after"]').click();
+    click(w, "#dialog-actions .secondary");
+    assert.equal(readFileSync(join(dir, "settings.yaml"), "utf8"), saved);
+  } finally { dom.window.close(); }
+});
+
+test("preview tabs can be reordered by arrows and dragging and persist through native layout order", async () => {
+  const initial = `layout:
+  UniFi: {tab: Unifi, columns: 2, style: row}
+  Shared: {header: false}
+  Server: {tab: Main, icon: mdi-server}
+  Switch: {tab: Unifi, initiallyCollapsed: false}
+  Orphan: {tab: Other, header: false} # keep orphan
+  Media: {tab: Main, columns: 3}
+`;
+  writeFileSync(join(dir, "settings.yaml"), initial);
+  writeFileSync(join(dir, "services.yaml"), "- UniFi:\n    - Controller: {href: https://unifi.example}\n- Shared:\n    - Common: {href: https://shared.example}\n- Server:\n    - Host: {href: https://server.example}\n- Switch:\n    - Ports: {href: https://switch.example}\n- Media:\n    - Player: {href: https://media.example}\n");
+  writeFileSync(join(dir, "bookmarks.yaml"), "[]\n");
+  writeFileSync(join(dir, "custom.css"), "");
+  const dom = await setup(), w = dom.window, d = w.document;
+  const tabs = () => [...d.querySelectorAll(".preview-tab")].map(el => el.dataset.previewTab);
+  const tab = name => d.querySelector(`[data-preview-tab="${name}"]`);
+  const groups = () => [...d.querySelectorAll("#appearance-preview .preview-group")].map(el => el.dataset.name);
+  try {
+    click(w, "#appearance-open"); await idle(w);
+    assert.deepEqual(tabs(), ["Unifi", "Main", "Other"]);
+    assert.equal(tab("Unifi").draggable, true);
+    tab("Main").parentElement.querySelector('[data-move="before"]').click();
+    assert.deepEqual(tabs(), ["Main", "Unifi", "Other"]);
+    assert.equal(tab("Unifi").getAttribute("aria-selected"), "true", "Reordering keeps the active tab");
+    assert.deepEqual(groups(), ["Shared", "UniFi", "Switch"]);
+    tab("Main").click();
+    assert.deepEqual(groups(), ["Server", "Shared", "Media"]);
+    assert.equal(readFileSync(join(dir, "settings.yaml"), "utf8"), initial);
+    click(w, "#dialog-actions .secondary");
+    click(w, "#appearance-open"); await idle(w);
+    assert.deepEqual(tabs(), ["Unifi", "Main", "Other"], "Cancel discards tab changes");
+    const transfer = {setData() {}};
+    for (const [el, name] of [[tab("Other"), "dragstart"], [tab("Unifi"), "dragover"], [tab("Unifi"), "drop"]]) {
+      const event = new w.Event(name, {bubbles: true, cancelable: true});
+      Object.defineProperties(event, {dataTransfer: {value: transfer}, clientX: {value: -1}});
+      el.dispatchEvent(event);
+    }
+    assert.deepEqual(tabs(), ["Other", "Unifi", "Main"]);
+    tab("Main").parentElement.querySelector('[data-move="before"]').click();
+    assert.deepEqual(tabs(), ["Other", "Main", "Unifi"]);
+    click(w, "#dialog-actions .primary");
+    click(w, "#save"); await idle(w);
+    const saved = readFileSync(join(dir, "settings.yaml"), "utf8");
+    assert.deepEqual([...saved.matchAll(/^  ([\w]+):/gm)].map(match => match[1]), ["Orphan", "Shared", "Server", "Media", "UniFi", "Switch"]);
+    assert.match(saved, /# keep orphan/);
+    assert.match(saved, /icon: mdi-server/);
+    assert.match(saved, /initiallyCollapsed: false/);
+    click(w, "#appearance-open"); await idle(w);
+    assert.deepEqual(tabs(), ["Other", "Main", "Unifi"]);
+    tab("Main").click();
+    assert.deepEqual(groups(), ["Shared", "Server", "Media"]);
+    tab("Unifi").click();
+    assert.deepEqual(groups(), ["Shared", "UniFi", "Switch"]);
+  } finally { dom.window.close(); }
 });
 
 test("add actions stay on the matching block and are not duplicated in widget properties", async () => {
@@ -2102,4 +2274,265 @@ test("English dictionary covers explicit UI copy and preserves placeholders", ()
   } finally {
     dom.window.close();
   }
+});
+test("optional Homepage scripts preserve user code and save only on request", async () => {
+  const custom = "// personal script\n";
+  writeFileSync(join(dir, "custom.js"), custom);
+  const dom = await setup(), w = dom.window, d = w.document;
+  try {
+    [...d.querySelectorAll("nav button")].find(b => b.textContent.includes("JS")).click();
+    await idle(w);
+    for (const key of ["clock", "copyAddress"]) {
+      const input = d.querySelector('[data-extra="' + key + '"]');
+      assert.ok(input && !input.checked);
+      input.checked = true; input.dispatchEvent(new w.Event("change"));
+    }
+    click(w, "#add-homepage-clock");
+    const clockRows = d.querySelectorAll("[data-clock-index]");
+    assert.equal(clockRows.length, 2);
+    const zonePicker = clockRows[0].querySelector('[data-clock-field="timeZone"]');
+    assert.equal(zonePicker.tagName, "INPUT");
+    zonePicker.focus();
+    assert.equal(zonePicker.getAttribute("aria-expanded"), "true");
+    const zoneList = d.getElementById(zonePicker.getAttribute("aria-controls"));
+    assert.ok(zoneList.querySelector('[data-zone="Asia/Tokyo"]'));
+    type(w, zonePicker, "Tokyo");
+    assert.equal(zoneList.querySelectorAll('[role="option"]').length, 1);
+    zoneList.querySelector('[data-zone="Asia/Tokyo"]').click();
+    assert.equal(zonePicker.value, "Asia/Tokyo");
+    assert.equal(zonePicker.getAttribute("aria-expanded"), "false");
+    zonePicker.click();
+    assert.ok(zoneList.querySelectorAll('[role="option"]').length > 100);
+    zonePicker.dispatchEvent(new w.KeyboardEvent("keydown", {key:"Escape"}));
+    assert.equal(clockRows[0].querySelector('[data-clock-field="zoneSearch"]'), null);
+    for (const [index, zone] of ["UTC", "Asia/Tokyo"].entries()) {
+      const zoneInput = clockRows[index].querySelector('[data-clock-field="timeZone"]');
+      zoneInput.value = zone;
+      zoneInput.dispatchEvent(new w.Event("change"));
+      const name = clockRows[index].querySelector('[data-clock-field="label"]');
+      type(w, name, zone);
+      const seconds = clockRows[index].querySelector('[data-clock-field="seconds"]');
+      seconds.checked = false;
+      seconds.dispatchEvent(new w.Event("change"));
+    }
+    assert.equal(readFileSync(join(dir, "custom.js"), "utf8"), custom);
+    click(w, "#save"); await idle(w);
+    const saved = readFileSync(join(dir, "custom.js"), "utf8");
+    assert.ok(saved.startsWith(custom));
+    assert.match(saved, /"clock":true,"copyAddress":true/);
+    const host = d.createElement("div"); host.id = "widgets-wrap"; d.body.append(host);
+    const card = d.createElement("div"); card.className = "service-card";
+    card.innerHTML = '<div class="service-title"><a href="https://example.com/">Test</a></div>'; d.body.append(card);
+    w.eval(saved); w.eval(saved);
+    assert.equal(d.querySelectorAll("[data-home-pager-clock]").length, 2);
+    for (const clock of d.querySelectorAll("[data-home-pager-clock]")) {
+      const expected = new w.Date().toLocaleTimeString(undefined, {hour:"2-digit",minute:"2-digit",timeZone:clock.title});
+      assert.equal(clock.textContent, clock.title + " · " + expected);
+    }
+    assert.equal(d.querySelectorAll("[data-home-pager-copy]").length, 1);
+    const copyIcon = d.querySelector("[data-home-pager-copy]");
+    const lateWidget = d.createElement("div"); lateWidget.className = "service-container"; card.append(lateWidget);
+    assert.equal(copyIcon.style.position, "absolute", "Async widgets must not be displaced by the copy button");
+    assert.equal(copyIcon.style.bottom, "3px");
+    w.__homePagerExtrasCleanup();
+    w.homepageExtrasRuntime({clock:true, clocks:[{timeZone:"Europe/Moscow",seconds:false,utcOffset:true,zoneAbbreviation:true}]});
+    assert.match(d.querySelector("[data-home-pager-clock]").textContent, /^MSK · .+ · UTC\+3$/);
+    w.__homePagerExtrasCleanup();
+    const heading = d.createElement("button");
+    heading.innerHTML = '<h2 class="service-group-name">Group</h2>';
+    heading.setAttribute("aria-expanded","true");
+    heading.onclick = () => heading.setAttribute("aria-expanded", String(heading.getAttribute("aria-expanded") !== "true"));
+    d.body.append(heading);
+    w.homepageExtrasRuntime({collapseGroups:true});
+    d.querySelector('[data-group-action="collapse"]').click();
+    assert.equal(heading.getAttribute("aria-expanded"),"false");
+    d.querySelector('[data-group-action="expand"]').click();
+    assert.equal(heading.getAttribute("aria-expanded"),"true");
+    w.__homePagerExtrasCleanup();
+    for (const input of d.querySelectorAll("[data-extra]")) { input.checked=false; input.dispatchEvent(new w.Event("change")); }
+    click(w, "#save"); await idle(w);
+    assert.ok(!readFileSync(join(dir,"custom.js"),"utf8").includes("HOME-PAGER EXTRAS START"));
+  } finally { w.close(); }
+});
+test("information widgets use finite choices and typed parameter templates without changing custom values", async () => {
+  writeFileSync(join(dir,"widgets.yaml"), `- search:
+    provider: duckduckgo
+    target: _parent
+    focus: false
+- datetime:
+    text_size: custom-size
+    format:
+      timeStyle: short
+      hourCycle: h23
+      fractionalSecondDigits: 3
+      hour12: false
+- greeting:
+    text_size: xl
+    text: Hello
+- resources:
+    units: metric
+    diskUnits: bytes
+- glances:
+    version: 4
+    unit: imperial
+- openmeteo:
+    units: metric
+    format:
+      notation: compact
+- openweathermap:
+    provider: openweathermap
+    units: imperial
+- stocks:
+    provider: finnhub
+    color: true
+- kubernetes:
+    nodes:
+      show: false
+- longhorn:
+    total: true
+- customapi:
+    method: POST
+    mappings:
+      - field: test
+        format: percent
+- logo:
+    icon: homepage.png
+- unifi_console:
+    url: https://unifi
+`);
+  const dom=await setup(),w=dom.window,d=w.document;
+  try {
+    [...d.querySelectorAll("nav button")].find(b=>b.textContent.includes("Инфовиджеты")).click(); await idle(w);
+    const selectFor=(widget,field)=>block(w,widget).querySelector('[data-block-name="'+field+'"] select');
+    for(const [widget,field] of [["search","provider"],["search","target"],["datetime","text_size"],["datetime","timeStyle"],["datetime","hourCycle"],["datetime","fractionalSecondDigits"],["greeting","text_size"],["resources","units"],["resources","diskUnits"],["glances","version"],["glances","unit"],["openmeteo","notation"],["openweathermap","provider"],["stocks","provider"],["customapi","method"],["customapi","format"]]) assert.ok(selectFor(widget,field),widget+"."+field);
+    assert.equal(selectFor("datetime","text_size").value,"custom-size");
+    type(w,selectFor("search","provider"),"custom");
+    const customURL = block(w,"search").querySelector('[data-block-name="url"] input');
+    assert.ok(customURL);
+    type(w,customURL,"https://search.example.com/?q=");
+    type(w,selectFor("search","provider"),"brave");
+    type(w,selectFor("search","provider"),"custom");
+    assert.equal(block(w,"search").querySelector('[data-block-name="url"] input').value,"https://search.example.com/?q=");
+    assert.equal(block(w,"search").querySelectorAll('[data-block-name="url"]').length,1);
+    type(w,selectFor("search","provider"),"brave");
+    type(w,selectFor("glances","version"),"3");
+    const add=[...block(w,"resources").querySelectorAll(".add-inline")].find(b=>b.textContent.includes("шаблона"));
+    assert.ok(add); add.click();
+    assert.ok(d.querySelector('[data-parameter="expanded"]'));
+    d.querySelector('[data-parameter="expanded"]').click();
+    assert.ok(block(w,"resources").querySelector('[data-block-name="expanded"] input[role="switch"]'));
+    click(w,"#save"); await idle(w);
+    const raw=readFileSync(join(dir,"widgets.yaml"),"utf8");
+    assert.match(raw,/provider: brave/);assert.match(raw,/version: 3/);assert.match(raw,/text_size: custom-size/);assert.match(raw,/hour12: false/);
+  } finally {w.close();}
+});
+test("UniFi Custom API catalog groups system and traffic variants with four mappings", async () => {
+  writeFileSync(join(dir,"services.yaml"),"- Monitoring: []\n");
+  const dom=await setup(),w=dom.window,d=w.document;
+  try {
+    [...d.querySelectorAll("nav button")].find(b=>b.textContent.includes("Сервисы")).click();await idle(w);
+    click(w,"#library");
+    for (const [slug, variants] of [["unifi-wan-health",1],["unifi-uplink-errors",1],["unifi-device-customapi",3],["unifi-wifi-customapi",2],["unifi-ports-customapi",1]]) {
+      const card=d.querySelector('[data-catalog-key="'+slug+'"]');
+      assert.ok(card,slug);
+      assert.equal(card.querySelector("select")?.options.length || 1,variants);
+      assert.ok(card.querySelector("img")?.src.includes("unifi.png"));
+    }
+    type(w,d.querySelector('#dialog-body input[type="search"]'),"unifi-customapi");
+    const entry=d.querySelector('[data-catalog-key="unifi-customapi"]');
+    assert.ok(entry);const variant=entry.querySelector("select");assert.equal(variant.options.length,2);
+    variant.value="1";variant.dispatchEvent(new w.Event("change"));entry.querySelector("button").click();
+    click(w,"#save");await idle(w);
+    const raw=readFileSync(join(dir,"services.yaml"),"utf8");
+    assert.match(raw,/type: customapi/);assert.match(raw,/HOMEPAGE_VAR_UNIFI_API_KEY/);
+    assert.match(raw,/icon: unifi.png/);assert.match(raw,/stat\/device\/aa:bb:cc:dd:ee:ff/);
+    assert.equal((raw.match(/field: /g)||[]).length,4);
+    assert.match(raw,/uplink.rx_bytes-r/);assert.match(raw,/uplink.tx_bytes-r/);
+    assert.ok(!raw.includes("password:"));
+    assert.equal((await fetch(base+"/unifi-customapi.html")).status,200);
+  } finally {w.close();}
+});
+test("editor expansion buttons persist per file across reloads and group moves without modifying configuration", async () => {
+  const settings = 'title: Expansion test\nbackground:\n  image: /images/test.jpg\nlayout:\n  Alpha:\n    style: column\n';
+  const services = '- Alpha:\n    - Server:\n        href: https://example.com\n        widget:\n          type: proxmox\n- Beta: []\n';
+  writeFileSync(join(dir,'settings.yaml'),settings);
+  writeFileSync(join(dir,'services.yaml'),services);
+  const dom=await setup(),w=dom.window,d=w.document;let reloaded;
+  const navigate=async(window,label)=>{[...window.document.querySelectorAll('nav button')].find(b=>b.textContent.includes(label)).click();await idle(window)};
+  try {
+    click(w,'#editor-collapse-all');
+    assert.ok([...d.querySelectorAll('#editor details.tree-group')].every(el=>!el.open));
+    block(w,'layout').querySelector(':scope > summary .tree-toggle-button').click();
+    assert.equal(block(w,'layout').open,true);
+    await navigate(w,'Сервисы');
+    click(w,'#editor-expand-all');
+    assert.ok([...d.querySelectorAll('#editor details.tree-group')].every(el=>el.open));
+    block(w,'Server').querySelector(':scope > summary .tree-toggle-button').click();
+    moveButton(block(w,'Alpha'),'ниже').click();
+    assert.equal(block(w,'Alpha').open,true);
+    assert.equal(block(w,'Server').open,false);
+    assert.equal(w.document.getElementById('save').disabled,false,'Moving a group should still mark its actual config change');
+    click(w,'#reload');await idle(w);
+    assert.equal(block(w,'Alpha').open,true);
+    assert.equal(block(w,'Server').open,false);
+    assert.equal(d.getElementById('save').disabled,true,'Expansion alone must not mark a configuration change');
+    await navigate(w,'Настройки');
+    assert.equal(block(w,'background').open,false);
+    assert.equal(block(w,'layout').open,true);
+    const storage=Object.fromEntries(Array.from({length:w.localStorage.length},(_,i)=>{const key=w.localStorage.key(i);return [key,w.localStorage.getItem(key)]}));
+    assert.ok(Object.keys(storage).some(k=>k.startsWith('home-pager.editor-expansion.v1:')));
+    reloaded=await setup(null,false,null,storage);
+    assert.equal(block(reloaded.window,'background').open,false);
+    assert.equal(block(reloaded.window,'layout').open,true);
+    await navigate(reloaded.window,'Сервисы');
+    assert.equal(block(reloaded.window,'Alpha').open,true);
+    assert.equal(block(reloaded.window,'Server').open,false);
+    assert.equal(readFileSync(join(dir,'settings.yaml'),'utf8'),settings);
+    assert.equal(readFileSync(join(dir,'services.yaml'),'utf8'),services);
+  } finally {dom.window.close();reloaded?.window.close();}
+});
+test("UniFi port maps render gateway and switch topology through the Homepage proxy without moving fallback content", async () => {
+  const dom=await setup(),w=dom.window,d=w.document;
+  const fallback=[];
+  function card(service) {
+    const group=d.createElement('div');group.className='services-group';
+    const heading=d.createElement('h2');heading.className='service-group-name';heading.textContent='Ports';group.append(heading);
+    const item=d.createElement('li');item.className='service';item.dataset.name=service;
+    item.innerHTML='<div class="service-card"><div class="service-title">Device</div><div class="service-container">Fallback</div></div>';
+    group.append(item);d.body.append(group);fallback.push(item.querySelector('.service-container'));
+  }
+  card('Gateway');card('Switch');
+  const makePorts=n=>Array.from({length:n},(_,i)=>({port_idx:i+1,name:'Port '+(i+1),media:i>=24?'SFP':'GE',enable:true,up:i===0||i===9||i===11,speed:1000,rx_errors:0,tx_errors:0,rx_dropped:i,tx_dropped:0}));
+  const switchPorts=makePorts(26);switchPorts[9].op_mode='aggregate';switchPorts[9].name='<img src=x onerror=alert(1)>';
+  switchPorts[11].aggregated_by=10;switchPorts[11].lag_member=true;
+  const gatewayPorts=makePorts(5);gatewayPorts[1].up=false;gatewayPorts[1].speed=10;gatewayPorts[1].enable=false;
+  const requests=[];
+  w.fetch=async(url,options)=>{requests.push({url:String(url),method:options?.method});const isSwitch=new URL(url,base).searchParams.get('service')==='Switch';return {ok:true,json:async()=>({data:[isSwitch?{port_table:switchPorts,uplink:{uplink_device_name:'Con',uplink_remote_port:3,port_idx:1}}:{port_table:gatewayPorts,uplink:{up:true,speed:1000},wan1:{port_idx:5}}]})}};
+  const bindings=[{group:'Ports',service:'Gateway',kind:'gateway'},{group:'Ports',service:'Switch',kind:'switch'}];
+  try {
+    w.homepageUniFiPortsRuntime(bindings);
+    await until(()=>d.querySelectorAll('[data-home-pager-ports] [data-port-number]').length===31);
+    const panels=d.querySelectorAll('[data-home-pager-ports]');
+    assert.equal(panels[0].querySelectorAll('[data-port-number]').length,5);
+    assert.equal(panels[1].querySelectorAll('[aria-label="SFP"] [data-port-number]').length,2);
+    assert.equal(panels[1].querySelectorAll('[aria-label="RJ45"] [data-port-number]').length,24);
+    assert.equal(panels[0].querySelector('.hp-port-grid').style.gridTemplateRows,'repeat(1,26px)');
+    assert.match(panels[1].textContent,/Подключён к Con · порт 3/);
+    assert.ok(panels[0].querySelector('[data-port-number="2"]').classList.contains('hp-port-disabled'));
+    panels[1].querySelector('[data-port-number="10"]').click();
+    assert.match(panels[1].querySelector('.hp-port-detail').textContent,/Агрегация/);
+    assert.equal(panels[1].querySelector('.hp-port-detail img'),null,'Device-supplied names must be rendered as text');
+    panels[1].querySelector('[data-port-number="12"]').click();
+    assert.match(panels[1].querySelector('.hp-port-detail').textContent,/С портом 10/);
+    assert.ok(fallback.every(node=>node.style.display==='none'));
+    assert.equal(requests.length,2);
+    assert.ok(requests.every(request=>request.url.startsWith('/api/services/proxy?')&&!request.method));
+    w.homepageUniFiPortsRuntime(bindings.map(binding=>({...binding,language:'en'})));
+    await until(()=>d.querySelectorAll('[data-home-pager-ports] [data-port-number]').length===31);
+    assert.equal(d.querySelectorAll('[data-home-pager-ports-style]').length,1);
+    assert.match(d.querySelectorAll('[data-home-pager-ports]')[1].textContent,/Connected to Con/);
+    w.__homePagerPortsCleanup();
+    assert.equal(d.querySelectorAll('[data-home-pager-ports]').length,0);
+    assert.ok(fallback.every(node=>node.style.display===''));
+  } finally {w.__homePagerPortsCleanup?.();w.close();}
 });

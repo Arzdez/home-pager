@@ -1,0 +1,30 @@
+widget:
+  type: customapi
+  url: https://unifi.example.com/proxy/network/api/s/default/stat/device/aa:bb:cc:dd:ee:ff
+  method: GET
+  headers:
+    X-API-KEY: "{{HOMEPAGE_VAR_UNIFI_API_KEY}}"
+    Accept: application/json
+  refreshInterval: 60000
+  display: list
+  mappings:
+    - field: "data.0.port_table.0.up"
+      label: "Состояние порта"
+      format: "text"
+      remap: [{"value":true,"to":"Подключён"},{"value":false,"to":"Отключён"}]
+    - field: "data.0.port_table.0.speed"
+      label: "Скорость порта"
+      format: "float"
+      suffix: " Mbps"
+    - field: "data.0.port_table.0.rx_errors"
+      label: "Ошибки приёма"
+      format: "number"
+    - field: "data.0.port_table.0.tx_errors"
+      label: "Ошибки передачи"
+      format: "number"
+    - field: "data.0.port_table.0.rx_dropped"
+      label: "Отброшено RX"
+      format: "number"
+    - field: "data.0.port_table.0.tx_dropped"
+      label: "Отброшено TX"
+      format: "number"

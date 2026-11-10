@@ -1,0 +1,22 @@
+﻿widget:
+  type: customapi
+  url: https://unifi.example.com/proxy/network/api/s/default/stat/device/aa:bb:cc:dd:ee:ff
+  method: GET
+  headers:
+    X-API-KEY: "{{HOMEPAGE_VAR_UNIFI_API_KEY}}"
+    Accept: application/json
+  display: block
+  refreshInterval: 30000
+  mappings:
+    - field: data.0.uplink.rx_bytes-r
+      label: "Загрузка WAN"
+      format: bitrate
+    - field: data.0.uplink.tx_bytes-r
+      label: "Отдача WAN"
+      format: bitrate
+    - field: data.0.uplink.rx_bytes
+      label: "Получено WAN"
+      format: bytes
+    - field: data.0.uplink.tx_bytes
+      label: "Передано WAN"
+      format: bytes
