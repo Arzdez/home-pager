@@ -169,6 +169,7 @@ const labels = {
   port: [t("Порт"), t("Порт подключения")],
   mode: [t("Режим подключения"), t("default или disabled")],
   abbr: [t("Сокращение"), t("Короткая подпись вместо иконки")],
+  id: [t("HTML ID"), t("Идентификатор элемента для CSS и JavaScript; должен быть уникальным")],
   style: [
     t("Расположение"),
     t("Строка на всю ширину или вертикальный столбец"),
@@ -584,6 +585,7 @@ function renderPage() {
     "hidden",
     current.name !== "settings.yaml",
   );
+  $("bookmark-settings-open").classList.toggle("hidden", current.name !== "bookmarks.yaml");
   $("add-root").textContent = ["services.yaml", "bookmarks.yaml"].includes(
     current.name,
   )
@@ -945,6 +947,14 @@ function serviceInfo(parent) {
     ? findIconTargets(current.tree).find((t) => t.target === parent)
     : null;
 }
+function fieldCaption(name, parent) {
+  if (name === "description") {
+    if (serviceInfo(parent)) return [t("Описание"), t("Описание сервиса")];
+    if (current.name === "bookmarks.yaml" && findIconTargets(current.tree).some(item => item.target === parent))
+      return [t("Описание"), t("Описание закладки")];
+  }
+  return labels[name];
+}
 function blockContext(parent) {
   if (current.name !== "services.yaml") return null;
   if (movableGroups.some((g) => g.parent === parent))
@@ -1086,6 +1096,7 @@ function parameterTemplates(parent) {
         icon: "mdi-bookmark",
         description: "",
         target: "_blank",
+        id: "bookmark-id",
       }),
     ];
   } else if (current.name === "settings.yaml" && parent === root()) {
@@ -1202,6 +1213,7 @@ function parameterDialog(parent) {
   }
   for (const { key, value } of templates) {
     const exists = Boolean(mapValue(parent, key.Value));
+    const caption = fieldCaption(key.Value, parent);
     const b = button("", "template-card", () => {
       parent.Content ||= [];
       appendSettingsFields(parent, structuredClone(key), structuredClone(value));
@@ -1212,13 +1224,13 @@ function parameterDialog(parent) {
     b.disabled = exists;
     b.dataset.parameter = key.Value;
     b.append(
-      make("strong", "", labels[key.Value]?.[0] || key.Value),
+      make("strong", "", caption?.[0] || key.Value),
       make(
         "small",
         "",
         exists
           ? t("Уже добавлено")
-          : labels[key.Value]?.[1] ||
+          : caption?.[1] ||
               value.LineComment ||
               value.HeadComment ||
               (value.Kind === 4
@@ -1474,6 +1486,10 @@ function fieldChoices(name, parent) {
       ]),
     ];
   const top = parent === root();
+  if (top && name === "bookmarksStyle")
+    return [["default", t("Обычные карточки")], ["icons", t("Только иконки")]];
+  if (top && name === "maxBookmarkGroupColumns")
+    return [6, 7, 8].map(value => [String(value), String(value)]);
   if (top && name === "theme")
     return [
       ["dark", t("Тёмная")],
@@ -1712,6 +1728,13 @@ function renderEntry(parent, index, name, value, container, depth, key) {
     duplicate.title = t("Создать копию «") + name + "»";
     duplicate.setAttribute("aria-label", duplicate.title);
     actions.append(duplicate);
+    if(current.name === "bookmarks.yaml" && movableGroups.some(group=>group.parent===value)) {
+      const settings=button("⚙", "bookmark-group-settings", event=>{
+        event.preventDefault();event.stopPropagation();openBookmarkSettings(name);
+      });
+      settings.title=t("Настройки этой группы");settings.setAttribute("aria-label",settings.title);
+      actions.append(settings);
+    }
     const context = blockContext(value);
     if (context) {
       const role = make(
@@ -1797,7 +1820,7 @@ function renderEntry(parent, index, name, value, container, depth, key) {
             ),
           ],
         }[name]
-      : null) || labels[name];
+      : null) || fieldCaption(name, parent);
   const label = make("label", "field-label"),
     id = "field-" + ++renderEntry.id;
   label.htmlFor = id;
@@ -1827,6 +1850,7 @@ function renderEntry(parent, index, name, value, container, depth, key) {
     const choices =
       (value.Tag === "!!str" ||
         (current.name === "widgets.yaml" && value.Tag === "!!int") ||
+        (current.name === "settings.yaml" && name === "maxBookmarkGroupColumns" && value.Tag === "!!int") ||
         (grafana && name === "version" && value.Tag === "!!int") ||
         (isLayoutGroup(parent) &&
           name === "columns" &&
@@ -2472,7 +2496,9 @@ async function save() {
               }),
             })
           ).settings
-        : await api("/api/file", {
+        : current.name === "bookmarks.yaml"
+          ? await saveBookmarksWithAppearance(payload)
+          : await api("/api/file", {
             method: "PUT",
             body: JSON.stringify(payload),
           });

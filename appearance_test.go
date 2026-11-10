@@ -62,3 +62,53 @@ func TestAppearanceRejectsInvalidChanges(t *testing.T) {
 		t.Fatal("Allowed non-appearance file")
 	}
 }
+
+func TestBookmarkAppearanceScriptConflictIsAtomic(t *testing.T) {
+	s := &server{dir: t.TempDir()}
+	before := map[string]string{"bookmarks.yaml": "- Links: []\n", "custom.css": "/* personal */\n", "custom.js": "// personal script\n"}
+	for name, raw := range before {
+		if err := os.WriteFile(filepath.Join(s.dir, name), []byte(raw), 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	payload := map[string]change{}
+	for key, name := range map[string]string{"bookmarks": "bookmarks.yaml", "css": "custom.css", "script": "custom.js"} {
+		doc, err := s.read(name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		raw := doc.Raw + "\n"
+		if key == "bookmarks" {
+			raw = "- Renamed: []\n"
+		}
+		payload[key] = change{Name: name, Raw: raw, Revision: doc.Revision}
+	}
+	script := payload["script"]
+	script.Revision = "stale"
+	payload["script"] = script
+	if w := request(t, s, "PUT", "/api/appearance", payload); w.Code != 409 {
+		t.Fatal(w.Body.String())
+	}
+	for name, raw := range before {
+		doc, _ := s.read(name)
+		if doc.Raw != raw {
+			t.Fatalf("Conflict modified %s", name)
+		}
+	}
+	doc, _ := s.read("custom.js")
+	script.Revision = doc.Revision
+	payload["script"] = script
+	if w := request(t, s, "PUT", "/api/appearance", payload); w.Code != 200 {
+		t.Fatal(w.Body.String())
+	}
+	for key, change := range payload {
+		doc, _ := s.read(change.Name)
+		if doc.Raw != change.Raw {
+			t.Fatalf("Not saved: %s", key)
+		}
+	}
+	payload["script"] = change{Name: "services.yaml", Raw: "[]", Revision: "missing"}
+	if w := request(t, s, "PUT", "/api/appearance", payload); w.Code != 400 {
+		t.Fatal("Allowed unrelated script file")
+	}
+}

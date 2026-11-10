@@ -1,5 +1,5 @@
 :root {
-  font-size: 20px;
+  font-size: calc(20px * var(--panel-scale, 1));
   font-family:
     Inter,
     ui-sans-serif,
@@ -459,7 +459,7 @@ h1 {
 .field-input input:not([type="checkbox"]),
 .field-input select,
 .field-input textarea,
-.dialog-field input,
+.dialog-field input:not([type="checkbox"]),
 .dialog-field select {
   width: 100%;
   min-width: 0;
@@ -1411,6 +1411,14 @@ dialog::backdrop {
 .preview-tab-control.preview-tab-drop { outline: 2px dashed currentColor; }
 .preview-tab-move { background: transparent; color: inherit; border: 0; padding: 0.25rem; }
 .preview-tab-move:disabled { opacity: 0.25; }
+.bookmark-settings-group { border: 1px solid var(--line); border-radius: 0.625rem; margin: 0.75rem 0; }
+.bookmark-settings-group > summary { cursor: pointer; padding: 1rem; font-weight: 600; }
+.bookmark-settings-group > .appearance-group-fields { padding: 0 1rem 1rem; }
+.bookmark-appearance-fields { display: grid; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap: 0 1rem; }
+.bookmark-appearance-preview { display: flex; flex-wrap: wrap; padding: 1rem; border: 1px dashed var(--line); border-radius: 0.5rem; overflow: auto; }
+.bookmark-appearance-tile { flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: #8882; }
+.bookmark-appearance-tile > span { display: grid; place-items: center; }
+.bookmark-appearance-fields[hidden], .bookmark-appearance-preview[hidden] { display: none; }
 .preview-group-move { background: transparent; color: inherit; border: 1px solid #b4c7ec66; border-radius: 0.25rem; padding: 0.25rem 0.5rem; }
 .preview-group-move:disabled { opacity: 0.3; }
 .preview-groups {
@@ -1700,7 +1708,7 @@ dialog::backdrop {
 :root[data-panel-theme="dark"] .field-input input:not([type="checkbox"]),
 :root[data-panel-theme="dark"] .field-input select,
 :root[data-panel-theme="dark"] .field-input textarea,
-:root[data-panel-theme="dark"] .dialog-field input,
+:root[data-panel-theme="dark"] .dialog-field input:not([type="checkbox"]),
 :root[data-panel-theme="dark"] .dialog-field select {
   background: var(--panel-control);
   color: #d6def0;
@@ -1897,7 +1905,7 @@ aside > * {
 }
 @media (max-width: 760px) {
   :root {
-    font-size: 16px;
+    font-size: calc(16px * var(--panel-scale, 1));
   }
 }
 .server-config-active {

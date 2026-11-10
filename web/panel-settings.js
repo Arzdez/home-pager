@@ -1,10 +1,12 @@
 "use strict";
 
 const panelPreferencesKey = "home-pager.panel-preferences.v1";
+const panelScaleOptions = [50, 67, 75, 80, 90, 100, 110, 125, 150, 175, 200];
 const panelDefaults = {
   language: "ru",
   theme: "system",
   density: "comfortable",
+  scale: 100,
   services: "collapsed",
   bookmarks: "collapsed",
   showHints: true,
@@ -18,7 +20,9 @@ function normalizePanelPreferences(input) {
   const settings = { ...panelDefaults };
   if (!input || typeof input !== "object") return settings;
   for (const key of Object.keys(settings)) {
-    if (typeof settings[key] === "boolean") {
+    if (key === "scale") {
+      if (panelScaleOptions.includes(input[key])) settings[key] = input[key];
+    } else if (typeof settings[key] === "boolean") {
       if (typeof input[key] === "boolean") settings[key] = input[key];
     } else {
       const allowed =
@@ -59,6 +63,7 @@ function applyPanelPreferences(settings = panelPreferences) {
   root.dataset.panelTheme = theme;
   root.style.colorScheme = theme;
   root.dataset.panelDensity = settings.density;
+  root.style.setProperty("--panel-scale", String(settings.scale / 100));
   for (const key of [
     "showHints",
     "showCounts",
@@ -97,13 +102,23 @@ function panelDefaultOpen(file, depth) {
         : depth < 2;
 }
 function rememberPanelSection(name) {
+  try {
+    sessionStorage.setItem(panelSectionSessionKey(), name);
+  } catch { }
   if (panelPreferences.rememberSection) {
     try {
       localStorage.setItem("home-pager.last-section", name);
     } catch { }
   }
 }
+function panelSectionSessionKey() {
+  return "home-pager.current-section:" + (document.getElementById("directory")?.title || "");
+}
 function preferredPanelSection(names) {
+  try {
+    const name = sessionStorage.getItem(panelSectionSessionKey());
+    if (names.includes(name)) return name;
+  } catch { }
   if (panelPreferences.rememberSection) {
     try {
       const name = localStorage.getItem("home-pager.last-section");
@@ -140,7 +155,7 @@ function openPanelSettings() {
     input.id = "panel-preference-" + key;
     input.value = draft[key];
     input.addEventListener("change", () => {
-      draft[key] = input.value;
+      draft[key] = key === "scale" ? Number(input.value) : input.value;
       applyPanelPreferences(draft);
     });
     return input;
@@ -163,6 +178,8 @@ function openPanelSettings() {
     ["comfortable", t("Обычная")],
     ["compact", t("Компактная")],
   ]);
+  choice("scale", t("Масштаб интерфейса"), panelScaleOptions.map(value => [String(value), value + "%"]),
+    t("Применяется сразу. После сохранения используется при следующих открытиях панели в этом браузере."));
   const expansion = [
     ["collapsed", t("Только названия — всё свёрнуто")],
     ["groups", t("Открыть группы, карточки оставить свёрнутыми")],
@@ -176,14 +193,14 @@ function openPanelSettings() {
     ["showTechnicalNames", t("Технические имена параметров в заголовках")],
     ["showRoles", t("Подписи «Группа», «Сервис», «Виджет»")],
     ["expandSearch", t("Автоматически раскрывать результаты поиска")],
-    ["rememberSection", t("При запуске открывать последний раздел")],
+    ["rememberSection", t("Запоминать раздел между посещениями")],
   ]) {
     const input = document.createElement("input");
     input.type = "checkbox";
     input.checked = draft[key];
     input.id = "panel-preference-" + key;
     input.className = "panel-preference-switch";
-    add(title, input);
+    add(title, input, key === "rememberSection" ? t("При обновлении страницы текущий раздел восстанавливается всегда. Эта настройка также запоминает его для нового посещения панели.") : undefined);
     input.addEventListener("change", () => {
       draft[key] = input.checked;
       applyPanelPreferences(draft);

@@ -55,6 +55,7 @@ async function setup(
   systemDark = false,
   lastSection = null,
   storage = null,
+  session = null,
 ) {
   const dom = new JSDOM(readFileSync("web/index.html", "utf8"), {
     url: base,
@@ -62,6 +63,7 @@ async function setup(
     pretendToBeVisual: true,
   });
   const w = dom.window;
+  for (const [key,value] of Object.entries(session || {})) w.sessionStorage.setItem(key,value);
   for (const [key,value] of Object.entries(storage || {})) w.localStorage.setItem(key,value);
   w.fetch = (path, opts) => fetch(new URL(path, base), opts);
   w.structuredClone = structuredClone;
@@ -105,6 +107,8 @@ async function setup(
   new Script(readFileSync("web/appearance.js", "utf8")).runInContext(
     dom.getInternalVMContext(),
   );
+  new Script(readFileSync("web/bookmark-appearance.js", "utf8")).runInContext(dom.getInternalVMContext());
+  new Script(readFileSync("web/bookmark-settings.js", "utf8")).runInContext(dom.getInternalVMContext());
   new Script(readFileSync("web/server-settings.js", "utf8")).runInContext(
     dom.getInternalVMContext(),
   );
@@ -1321,6 +1325,31 @@ test("Grafana fields explain Basic authentication, select built-in alerts and re
   }
 });
 
+test("page reload restores the current section independently of the remember-between-visits preference", async () => {
+  let dom = await setup({rememberSection:false}), w = dom.window;
+  let session;
+  try {
+    for (const [title,name] of [["Закладки","bookmarks.yaml"],["Инфовиджеты","widgets.yaml"],["Стили CSS","custom.css"],["Скрипты JS","custom.js"],["Сервисы","services.yaml"]]) {
+      [...w.document.querySelectorAll("#navigation button")].find(b=>b.textContent.includes(title)).click();
+      await idle(w);
+      assert.equal(w.document.getElementById("filename").textContent,name);
+      session=Object.fromEntries(Array.from({length:w.sessionStorage.length},(_,i)=>{const key=w.sessionStorage.key(i);return [key,w.sessionStorage.getItem(key)]}));
+      dom.window.close();
+      dom=await setup({rememberSection:false},false,"settings.yaml",null,session); w=dom.window;
+      assert.equal(w.document.getElementById("filename").textContent,name);
+      assert.ok(w.document.querySelector("#navigation button.active").textContent.includes(title));
+    }
+    // A different browser tab does not inherit this tab's session selection.
+    const fresh=await setup({rememberSection:false},false,"bookmarks.yaml");
+    try { assert.equal(fresh.window.document.getElementById("filename").textContent,"settings.yaml"); }
+    finally { fresh.window.close(); }
+    const sessionKey=Object.keys(session).find(k=>k.startsWith("home-pager.current-section:"));
+    const invalid=await setup({rememberSection:false},false,null,null,{[sessionKey]:"missing.yaml"});
+    try { assert.equal(invalid.window.document.getElementById("filename").textContent,"settings.yaml"); }
+    finally { invalid.window.close(); }
+  } finally { dom.window.close(); }
+});
+
 test("panel preferences collapse groups by default, preview themes and persist display choices without changing files", async () => {
   const services =
     "- Infra:\n    - Server:\n        href: https://server.example.com\n- Media:\n    - Player:\n        href: https://player.example.com\n";
@@ -1354,11 +1383,14 @@ test("panel preferences collapse groups by default, preview themes and persist d
     type(w, d.getElementById("search"), "");
     click(w, "#panel-settings-open");
     change(d.getElementById("panel-preference-theme"), "dark");
+    change(d.getElementById("panel-preference-scale"), "75");
+    assert.equal(d.documentElement.style.getPropertyValue("--panel-scale"), "0.75");
     assert.equal(d.documentElement.dataset.panelTheme, "dark");
     [...d.querySelectorAll("#dialog-actions button")]
       .find((b) => b.textContent === "Отмена")
       .click();
     assert.equal(d.documentElement.dataset.panelTheme, "light");
+    assert.equal(d.documentElement.style.getPropertyValue("--panel-scale"), "1");
     assert.equal(
       w.localStorage.getItem("home-pager.panel-preferences.v1"),
       null,
@@ -1366,6 +1398,7 @@ test("panel preferences collapse groups by default, preview themes and persist d
     click(w, "#panel-settings-open");
     change(d.getElementById("panel-preference-theme"), "dark");
     change(d.getElementById("panel-preference-density"), "compact");
+    change(d.getElementById("panel-preference-scale"), "125");
     change(d.getElementById("panel-preference-services"), "groups");
     change(d.getElementById("panel-preference-bookmarks"), "all");
     change(d.getElementById("panel-preference-showHints"), false);
@@ -1376,6 +1409,7 @@ test("panel preferences collapse groups by default, preview themes and persist d
     );
     assert.equal(persisted.theme, "dark");
     assert.equal(persisted.density, "compact");
+    assert.equal(persisted.scale, 125);
     assert.equal(d.documentElement.dataset.panelShowHints, "false");
     assert.equal(block(w, "Infra").open, true);
     assert.equal(block(w, "Server").open, false);
@@ -1414,6 +1448,7 @@ test("panel preferences collapse groups by default, preview themes and persist d
   }
   const reloaded = await setup(persisted, false, "bookmarks.yaml");
   try {
+    assert.equal(reloaded.window.document.documentElement.style.getPropertyValue("--panel-scale"), "1.25");
     assert.equal(
       reloaded.window.document.documentElement.dataset.panelTheme,
       "dark",
@@ -1434,7 +1469,7 @@ test("panel preferences collapse groups by default, preview themes and persist d
 
 test("system theme follows device appearance and invalid stored options fall back safely", async () => {
   const dom = await setup(
-      { theme: "system", density: "invalid", services: "invalid" },
+      { theme: "system", density: "invalid", services: "invalid", scale: 999 },
       true,
     ),
     w = dom.window,
@@ -1442,6 +1477,7 @@ test("system theme follows device appearance and invalid stored options fall bac
   try {
     assert.equal(d.documentElement.dataset.panelTheme, "dark");
     assert.equal(d.documentElement.dataset.panelDensity, "comfortable");
+    assert.equal(d.documentElement.style.getPropertyValue("--panel-scale"), "1");
     w.__panelMedia.matches = false;
     w.__panelMedia.listener();
     assert.equal(d.documentElement.dataset.panelTheme, "light");
@@ -2202,7 +2238,7 @@ test("bookmarks create named groups and links with typed parameter templates", a
     const bookmark = block(w, "Example");
     assert.equal(bookmark.querySelectorAll("details").length, 0);
     bookmark.querySelector(".add-inline").click();
-    for (const key of ["href", "abbr", "icon", "description", "target"])
+    for (const key of ["href", "abbr", "icon", "description", "target", "id"])
       assert.ok(d.querySelector(`[data-parameter="${key}"]`));
     assert.equal(d.querySelector('[data-parameter="href"]').disabled, true);
     d.querySelector('[data-parameter="target"]').click();
@@ -2220,6 +2256,265 @@ test("bookmarks create named groups and links with typed parameter templates", a
   }
 });
 
+test("bookmark appearance settings preserve other layouts, unsaved links and conflicts", async () => {
+  const initial = "# personal settings\ntitle: Keep title\nfutureOption: keep\nlayout:\n  Servers: {style: row, columns: 4, tab: Main}\n  Links:\n    icon: mdi-star\n    futureField: keep\n";
+  const bookmarks = "- Links:\n    - Example:\n        - href: https://example.com\n          abbr: EX\n";
+  writeFileSync(join(dir,"settings.yaml"), initial);
+  writeFileSync(join(dir,"bookmarks.yaml"), bookmarks);
+  const dom = await setup(), w = dom.window, d = w.document;
+  const change = (el,value) => { el.value = value; el.dispatchEvent(new w.Event(el.tagName === "SELECT" ? "change" : "input",{bubbles:true})); };
+  const field = (key,group) => d.querySelector((group ? `[data-bookmark-group="${group}"] ` : "#dialog-body > label ")+`[data-bookmark-setting="${key}"]`);
+  try {
+    assert.ok(d.getElementById("bookmark-settings-open").classList.contains("hidden"));
+    [...d.querySelectorAll("nav button")].find(b => b.textContent.includes("Закладки")).click(); await idle(w);
+    const href = block(w,"href").querySelector("input");
+    type(w,href,"https://draft.example.com");
+    click(w,"#bookmark-settings-open"); await idle(w);
+    assert.equal(field("bookmarksStyle").value, "");
+    assert.equal(field("columns","Links").disabled,true);
+    change(field("style","Links"),"row");
+    assert.equal(field("columns","Links").disabled,false);
+    change(field("columns","Links"),"3");
+    change(field("iconsOnly","Links"),"true");
+    assert.equal(field("columns","Links").disabled,true);
+    change(field("maxBookmarkGroupColumns"),"8");
+    change(field("header","Links"),"false");
+    change(field("tab","Links"),"Bookmarks");
+    assert.equal(readFileSync(join(dir,"settings.yaml"),"utf8"),initial);
+    click(w,"#dialog-actions .secondary");
+    assert.equal(readFileSync(join(dir,"settings.yaml"),"utf8"),initial);
+    click(w,"#bookmark-settings-open"); await idle(w);
+    assert.equal(field("style","Links").value, "");
+    change(field("style","Links"),"row");
+    change(field("columns","Links"),"3");
+    change(field("bookmarksStyle"),"icons");
+    change(field("maxBookmarkGroupColumns"),"8");
+    change(field("tab","Links"),"Bookmarks");
+    click(w,"#dialog-actions .primary"); await idle(w);
+    const saved=readFileSync(join(dir,"settings.yaml"),"utf8");
+    assert.match(saved, /bookmarksStyle: icons/);
+    assert.match(saved, /maxBookmarkGroupColumns: 8/);
+    assert.match(saved, /columns: 3/);
+    assert.match(saved, /tab: Bookmarks/);
+    assert.match(saved, /futureField: keep/);
+    assert.match(saved, /title: Keep title/);
+    assert.match(saved, /# personal settings/);
+    assert.match(saved, /columns: 4/);
+    assert.equal(readFileSync(join(dir,"bookmarks.yaml"),"utf8"),bookmarks);
+    assert.equal(block(w,"href").querySelector("input").value,"https://draft.example.com");
+    assert.equal(d.getElementById("save").disabled,false);
+    click(w,"#bookmark-settings-open"); await idle(w);
+    change(field("bookmarksStyle"),"default");
+    writeFileSync(join(dir,"settings.yaml"),saved+"\n# changed externally\n");
+    click(w,"#dialog-actions .primary"); await idle(w);
+    assert.ok(d.getElementById("dialog").open);
+    assert.ok(!d.querySelector("#dialog-body .error").classList.contains("hidden"));
+    assert.equal(readFileSync(join(dir,"settings.yaml"),"utf8"),saved+"\n# changed externally\n");
+  } finally { w.close(); }
+});
+
+test("bookmark icon appearance saves scoped CSS, previews sizes, validates and preserves atomic conflicts", async () => {
+  const initial="title: Personal\nlayout:\n  Links: {iconsOnly: true}\n  More: {style: column}\n  Servers: {style: row, columns: 3}\n";
+  const personal="/* personal stylesheet */\nbody { color: inherit; }\n/* HOME-PAGER APPEARANCE START */\n.bookmark > a {border-radius: 5px !important;}\n/* HOME-PAGER APPEARANCE END */\n";
+  writeFileSync(join(dir,"settings.yaml"),initial);
+  writeFileSync(join(dir,"custom.css"),personal);
+  const bookmarks="- Links:\n    - Docs:\n        - href: https://docs.example.com\n          abbr: DC\n- More:\n    - Other:\n        - href: https://other.example.com\n          abbr: OT\n";
+  writeFileSync(join(dir,"bookmarks.yaml"),bookmarks);
+  const dom=await setup(),w=dom.window,d=w.document;
+  const control=(key,group="Links")=>d.querySelector(`[data-bookmark-group="${group}"] [data-bookmark-appearance="${key}"]`);
+  const change=(input,value)=>{if(input.type==="checkbox")input.checked=value;else input.value=value;input.dispatchEvent(new w.Event(input.tagName==="SELECT"||input.type==="checkbox"?"change":"input",{bubbles:true}));};
+  const open=async()=>{click(w,"#bookmark-settings-open");await idle(w);};
+  try {
+    [...d.querySelectorAll("#navigation button")].find(b=>b.textContent.includes("Закладки")).click();await idle(w);
+    await open();
+    assert.equal(control("enabled").checked,false);
+    change(control("enabled"),true);
+    assert.equal(control("iconSize").value,"48");
+    assert.equal(control("tileSize").value,"80");
+    change(control("iconSize"),"64");change(control("tileSize"),"96");change(control("gap"),"16");change(control("radius"),"20");
+    change(control("background"),"custom");change(control("backgroundColor"),"#112233");
+    change(control("border"),"solid");change(control("borderColor"),"#abcdef");change(control("borderWidth"),"2");
+    const tile=d.querySelector('[data-bookmark-group="Links"] .bookmark-appearance-tile');
+    assert.equal(tile.style.width,"96px");assert.equal(tile.firstChild.style.width,"64px");assert.equal(tile.style.borderRadius,"20px");
+    assert.equal(tile.style.background,"rgb(17, 34, 51)");
+    click(w,"#dialog-actions .secondary");
+    assert.equal(readFileSync(join(dir,"custom.css"),"utf8"),personal);
+    await open();assert.equal(control("enabled").checked,false);change(control("enabled"),true);
+    change(control("iconSize"),"100");
+    click(w,"#dialog-actions .primary");await idle(w);
+    assert.match(d.querySelector("#dialog-body .error").textContent,/8 px/);
+    assert.equal(readFileSync(join(dir,"settings.yaml"),"utf8"),initial);
+    assert.equal(readFileSync(join(dir,"custom.css"),"utf8"),personal);
+    change(control("iconSize"),"48");change(control("gap"),"16");change(control("background"),"transparent");change(control("border"),"none");
+    change(control("enabled","More"),true);
+    click(w,"#dialog-actions .primary");await idle(w);
+    const css=readFileSync(join(dir,"custom.css"),"utf8");
+    assert.ok(css.startsWith(personal));
+    assert.match(css,/HOME-PAGER BOOKMARK STYLE START/);
+    assert.match(css,/\.bookmark-group\[data-home-pager-bookmark-group=/);
+    assert.match(css,/width: 80px !important; height: 80px/);
+    assert.match(css,/width: 48px !important; height: 48px/);
+    assert.match(css,/gap: 16px/);
+    assert.match(css,/background: transparent/);
+    assert.match(css,/border: none/);
+    assert.ok(!css.includes(".service-card"));
+    assert.equal(readFileSync(join(dir,"bookmarks.yaml"),"utf8"),bookmarks);
+    assert.ok(!readFileSync(join(dir,"settings.yaml"),"utf8").includes("iconSize"));
+    await open();assert.equal(control("enabled").checked,true);assert.equal(control("gap").value,"16");
+    change(control("enabled"),false);
+    click(w,"#dialog-actions .primary");await idle(w);
+    const afterReset=readFileSync(join(dir,"custom.css"),"utf8");
+    const metadata=JSON.parse(afterReset.match(/\/\* controls: (.+?) \*\//)[1]);
+    assert.equal(Object.hasOwn(metadata,"Links"),false);assert.ok(Object.hasOwn(metadata,"More"));
+    assert.ok(afterReset.startsWith(personal));
+    await open();change(control("enabled"),true);
+    const savedSettings=readFileSync(join(dir,"settings.yaml"),"utf8");
+    change(d.querySelector('[data-bookmark-group="Links"] [data-bookmark-setting="tab"]'),"Bookmarks");
+    writeFileSync(join(dir,"custom.css"),afterReset+"\n/* external change */\n");
+    click(w,"#dialog-actions .primary");await idle(w);
+    assert.ok(d.getElementById("dialog").open);
+    assert.match(d.querySelector("#dialog-body .error").textContent,/custom.css/);
+    assert.equal(readFileSync(join(dir,"settings.yaml"),"utf8"),savedSettings);
+    assert.equal(readFileSync(join(dir,"custom.css"),"utf8"),afterReset+"\n/* external change */\n");
+  } finally { w.close(); }
+});
+
+test("bookmark appearance survives added, duplicate, removed and renamed groups and deletion of the original anchor", async () => {
+  const original="- Links:\n    - First:\n        - href: https://first.example\n    - Remaining:\n        - href: https://remaining.example\n";
+  writeFileSync(join(dir,"bookmarks.yaml"),original);
+  writeFileSync(join(dir,"settings.yaml"),"layout:\n  Links: {iconsOnly: true}\n");
+  const legacy={Links:{iconSize:84,tileSize:123,gap:16,radius:20,anchor:{name:"First",href:"https://first.example"}}};
+  writeFileSync(join(dir,"custom.css"),'/* personal */\n/* HOME-PAGER BOOKMARK STYLE START */\n/* controls: '+JSON.stringify(legacy)+' */\n.bookmark-group:has(.bookmark[data-name="First"]) {}\n/* HOME-PAGER BOOKMARK STYLE END */\n');
+  writeFileSync(join(dir,"custom.js"),"// keep my clocks and scripts\n");
+  const dom=await setup(),w=dom.window,d=w.document;
+  const css=()=>readFileSync(join(dir,"custom.css"),"utf8");
+  const rules=()=>JSON.parse(css().match(/\/\* controls: (.+?) \*\//)[1]);
+  const edit=async raw=>{click(w,"#raw-tab");await idle(w);type(w,d.getElementById("raw"),raw);click(w,"#save");await idle(w);click(w,"#visual-tab");await idle(w);};
+  try {
+    [...d.querySelectorAll("#navigation button")].find(b=>b.textContent.includes("Закладки")).click();await idle(w);
+    click(w,"#add-root");type(w,d.querySelector("#dialog-body input"),"Temporary");click(w,"#dialog-actions .primary");
+    click(w,"#save");await idle(w);
+    assert.equal(rules().Links.iconSize,84);assert.equal(rules().Links.tileSize,123);
+    assert.match(css(),/data-home-pager-bookmark-group="Links"/);
+    assert.ok(readFileSync(join(dir,"custom.js"),"utf8").startsWith("// keep my clocks and scripts\n"));
+    const duplicate=original+original.replace("- Links:","- Copy:");
+    await edit(duplicate);
+    click(w,"#bookmark-settings-open");await idle(w);
+    const enabled=d.querySelector('[data-bookmark-group="Links"] [data-bookmark-appearance="enabled"]');
+    assert.equal(enabled.checked,true);assert.equal(enabled.disabled,false);
+    assert.equal(d.querySelector('[data-bookmark-group="Links"] [data-bookmark-appearance="iconSize"]').value,"84");
+    click(w,"#dialog-actions .primary");await idle(w);
+    assert.equal(rules().Links.iconSize,84,"Opening settings with duplicate links must not erase styles");
+    const remaining="- Links:\n    - Remaining:\n        - href: https://remaining.example\n";
+    await edit(remaining);
+    assert.equal(rules().Links.iconSize,84);assert.equal(rules().Links.anchor.name,"Remaining");
+    await edit(remaining.replace("- Links:","- Renamed:"));
+    assert.equal(rules().Renamed.iconSize,84);assert.equal(Object.hasOwn(rules(),"Links"),false);
+    await edit("- Renamed: []\n- Added: []\n");
+    assert.equal(rules().Renamed.iconSize,84,"Empty groups must retain appearance settings");
+    click(w,"#bookmark-settings-open");await idle(w);
+    assert.equal(d.querySelector('[data-bookmark-group="Renamed"] [data-bookmark-appearance="enabled"]').checked,true);
+    click(w,"#dialog-actions .primary");await idle(w);
+    assert.equal(rules().Renamed.iconSize,84);
+    assert.equal((readFileSync(join(dir,"custom.js"),"utf8").match(/BOOKMARK STYLE SCRIPT START/g)||[]).length,1);
+  } finally {w.close();}
+});
+
+test("Homepage bookmark group tags remain stable across DOM insertion, identical links and hidden-header tabs", async () => {
+  const dom=new JSDOM('<html><body><script id="__NEXT_DATA__" type="application/json"></script><main></main></body></html>',{url:"https://home.example/#main",runScripts:"outside-only"}),w=dom.window,d=w.document;
+  new Script(readFileSync("web/bookmark-appearance.js","utf8")).runInContext(dom.getInternalVMContext());
+  const cards='<ul><li class="bookmark" data-name="Same"><a href="https://same.example">Same</a></li></ul>';
+  const group=(name,header=true)=>{const el=d.createElement("section");el.className="bookmark-group";el.innerHTML=(header?'<h2 class="bookmark-group-name">'+name+'</h2>':'')+cards;return el;};
+  const props={initialSettings:{layout:{HiddenMain:{tab:"Main",header:false},HiddenOther:{tab:"Other",header:false}}},fallback:{"/api/bookmarks":[{name:"HiddenMain",bookmarks:[{name:"Same",href:"https://same.example"}]},{name:"HiddenOther",bookmarks:[{name:"Same",href:"https://same.example"}]}]}};
+  d.getElementById("__NEXT_DATA__").textContent=JSON.stringify({props:{pageProps:props}});
+  const main=d.querySelector("main"),a=group("Styled"),b=group("Copy"),hidden=group("",false);main.append(a,b,hidden);
+  try {
+    w.homepageBookmarkAppearanceRuntime();
+    assert.equal(a.dataset.homePagerBookmarkGroup,"Styled");assert.equal(b.dataset.homePagerBookmarkGroup,"Copy");assert.equal(hidden.dataset.homePagerBookmarkGroup,"HiddenMain");
+    const inserted=group("Added");main.prepend(inserted);a.querySelector(".bookmark").remove();b.remove();
+    await new Promise(r=>setTimeout(r,0));
+    assert.equal(a.dataset.homePagerBookmarkGroup,"Styled");assert.equal(inserted.dataset.homePagerBookmarkGroup,"Added");
+    w.location.hash="#other";w.dispatchEvent(new w.Event("hashchange"));await new Promise(r=>setTimeout(r,0));
+    assert.equal(hidden.dataset.homePagerBookmarkGroup,"HiddenOther");
+    w.__homePagerBookmarkAppearanceCleanup();assert.equal(a.hasAttribute("data-home-pager-bookmark-group"),false);
+  } finally {w.close();}
+});
+
+test("group settings buttons open isolated overrides and reset cleanly to global bookmark appearance", async () => {
+  const settings="title: Keep\nbookmarksStyle: icons\nlayout:\n  Links: {style: row, columns: 2}\n  Other: {style: column}\n";
+  const bookmarks="- Links:\n    - Docs:\n        - href: https://docs.example\n- Other:\n    - More:\n        - href: https://more.example\n";
+  writeFileSync(join(dir,"settings.yaml"),settings);writeFileSync(join(dir,"bookmarks.yaml"),bookmarks);
+  writeFileSync(join(dir,"custom.css"),"/* personal */\n");writeFileSync(join(dir,"custom.js"),"// personal\n");
+  const dom=await setup(),w=dom.window,d=w.document;
+  const globalControl=key=>d.querySelector(`[data-bookmark-defaults] [data-bookmark-appearance="${key}"]`);
+  const localControl=key=>d.querySelector(`[data-bookmark-group="Links"] [data-bookmark-appearance="${key}"]`);
+  const change=(input,value)=>{if(input.type==='checkbox')input.checked=value;else input.value=value;input.dispatchEvent(new w.Event(input.type==='checkbox'||input.tagName==='SELECT'?'change':'input',{bubbles:true}));};
+  const save=async()=>{click(w,"#dialog-actions .primary");await idle(w);};
+  const openGroup=async()=>{block(w,"Links").querySelector('.bookmark-group-settings').click();await idle(w);};
+  try {
+    [...d.querySelectorAll('#navigation button')].find(b=>b.textContent.includes('Закладки')).click();await idle(w);
+    assert.equal(d.querySelectorAll('.bookmark-group-settings').length,2);
+    click(w,'#bookmark-settings-open');await idle(w);
+    change(globalControl('enabled'),true);change(globalControl('iconSize'),'56');change(globalControl('tileSize'),'88');change(globalControl('background'),'custom');change(globalControl('backgroundColor'),'#123456');await save();
+    await openGroup();
+    assert.equal(d.querySelectorAll('[data-bookmark-group]').length,1);
+    assert.equal(d.querySelector('[data-bookmark-group="Other"]'),null);
+    assert.equal(d.querySelector('[data-bookmark-defaults]'),null);
+    assert.match(d.getElementById('dialog-title').textContent,/Links/);
+    assert.equal(localControl('enabled').checked,false);
+    assert.equal(localControl('iconSize').value,'56');
+    change(localControl('enabled'),true);change(localControl('iconSize'),'72');change(localControl('tileSize'),'104');
+    change(d.querySelector('[data-bookmark-group="Links"] [data-bookmark-setting="iconsOnly"]'),'false');
+    assert.equal(d.querySelector('[data-bookmark-group="Links"] [data-bookmark-setting="columns"]').disabled,false);
+    await save();
+    let css=readFileSync(join(dir,'custom.css'),'utf8');
+    assert.equal(JSON.parse(css.match(/\/\* controls: (.+?) \*\//)[1]).Links.iconSize,72);
+    assert.equal(JSON.parse(css.match(/\/\* defaults: (.+?) \*\//)[1]).iconSize,56);
+    assert.match(readFileSync(join(dir,'settings.yaml'),'utf8'),/bookmarksStyle: icons/);
+    assert.match(readFileSync(join(dir,'settings.yaml'),'utf8'),/iconsOnly: false/);
+    assert.match(css,/BOOKMARK MODES START/);
+    click(w,'#bookmark-settings-open');await idle(w);
+    change(globalControl('iconSize'),'40');change(globalControl('tileSize'),'72');await save();
+    await openGroup();assert.equal(localControl('iconSize').value,'72');
+    change(localControl('enabled'),false);await save();
+    await openGroup();assert.equal(localControl('enabled').checked,false);assert.equal(localControl('iconSize').value,'40');
+    change(d.querySelector('[data-bookmark-setting="iconsOnly"]'),'');await save();
+    const saved=readFileSync(join(dir,'settings.yaml'),'utf8');
+    assert.ok(!saved.includes('iconsOnly:'));assert.match(saved,/title: Keep/);assert.match(saved,/Other:/);
+    assert.equal(readFileSync(join(dir,'bookmarks.yaml'),'utf8'),bookmarks);
+    css=readFileSync(join(dir,'custom.css'),'utf8');assert.ok(css.startsWith('/* personal */'));
+    assert.equal(JSON.parse(css.match(/\/\* defaults: (.+?) \*\//)[1]).iconSize,40);
+    assert.ok(!css.includes('BOOKMARK STYLE START'));
+  } finally {w.close();}
+});
+
+test("Homepage group card view overrides global icons and individual sizes override global CSS", async () => {
+  const dom=new JSDOM('<html><head></head><body><script id="__NEXT_DATA__" type="application/json"></script><main></main></body></html>',{url:'https://home.example/',runScripts:'outside-only'}),w=dom.window,d=w.document;
+  new Script(readFileSync('web/bookmark-appearance.js','utf8')).runInContext(dom.getInternalVMContext());
+  const props={initialSettings:{bookmarksStyle:'icons',layout:{Cards:{iconsOnly:false,style:'row',columns:2}}},fallback:{'/api/bookmarks':[{name:'Cards',bookmarks:[{name:'Docs',href:'https://docs.example',description:'Documentation'}]},{name:'Icons',bookmarks:[{name:'Site',href:'https://site.example'}]}]}};
+  d.getElementById('__NEXT_DATA__').textContent=JSON.stringify({props:{pageProps:props}});
+  const makeGroup=(name,title,href)=>{const group=d.createElement('section');group.className='bookmark-group';group.innerHTML=`<h2 class="bookmark-group-name">${name}</h2><ul><li class="bookmark grid" data-name="${title}"><a href="${href}"><div class="bookmark-icon"><div><img src="https://icons.example/icon.png"></div></div></a></li></ul>`;d.querySelector('main').append(group);return group;};
+  const a=makeGroup('Cards','Docs','https://docs.example'),b=makeGroup('Icons','Site','https://site.example');const originalIcon=a.querySelector('img');
+  try {
+    const style=d.createElement('style');style.textContent=w.buildBookmarkAppearanceCSS('',{Cards:{iconSize:72,tileSize:104}}, {iconSize:56,tileSize:88});d.head.append(style);
+    w.homepageBookmarkAppearanceRuntime(['Cards']);
+    await new Promise(r=>setTimeout(r,0));
+    assert.equal(a.getAttribute('data-home-pager-bookmark-cards'),'row');assert.equal(b.hasAttribute('data-home-pager-bookmark-cards'),false);
+    assert.equal(a.querySelectorAll('[data-home-pager-bookmark-label]').length,1);
+    assert.match(a.querySelector('[data-home-pager-bookmark-label]').textContent,/DocsDocumentation/);
+    assert.equal(a.querySelector('img'),originalIcon);
+    assert.equal(w.getComputedStyle(a.querySelector('a')).width,'100%');
+    assert.equal(w.getComputedStyle(a.querySelector('img')).width,'72px');
+    assert.equal(w.getComputedStyle(b.querySelector('img')).width,'56px');
+    assert.equal(w.getComputedStyle(b.querySelector('a')).width,'88px');
+    assert.match(a.style.getPropertyValue('--home-pager-bookmark-columns'),/repeat\(2/);
+    props.initialSettings.layout.Cards.iconsOnly=undefined;d.getElementById('__NEXT_DATA__').textContent=JSON.stringify({props:{pageProps:props}});
+    await new Promise(r=>setTimeout(r,0));
+    assert.equal(a.querySelector('[data-home-pager-bookmark-label]'),null);assert.equal(a.hasAttribute('data-home-pager-bookmark-cards'),false);
+    w.__homePagerBookmarkAppearanceCleanup();assert.equal(a.querySelector('img'),originalIcon);
+  } finally {w.close();}
+});
+
 test("English dictionary covers explicit UI copy and preserves placeholders", () => {
   const { createContext } = require("node:vm");
   const context = createContext({});
@@ -2232,6 +2527,8 @@ test("English dictionary covers explicit UI copy and preserves placeholders", ()
   for (const file of [
     "app.js",
     "appearance.js",
+    "bookmark-settings.js",
+    "bookmark-appearance.js",
     "panel-settings.js",
     "server-settings.js",
   ]) {

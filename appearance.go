@@ -9,28 +9,43 @@ import (
 	"time"
 )
 
-// Validate both revisions and back up both files before changing either one.
+// Validate all revisions and back up all files before changing any of them.
 // Filesystem rename is per-file; restore earlier writes if a later write fails.
 func (s *server) saveAppearance(w http.ResponseWriter, r *http.Request) {
 	var payload struct {
-		Settings change `json:"settings"`
-		CSS      change `json:"css"`
+		Settings  *change `json:"settings"`
+		Bookmarks *change `json:"bookmarks"`
+		CSS       change  `json:"css"`
+		Script    *change `json:"script"`
 	}
 	if !decode(w, r, &payload) {
 		return
 	}
-	if payload.Settings.Name != "settings.yaml" || payload.CSS.Name != "custom.css" {
-		fail(w, 400, "Оформление может изменять только settings.yaml и custom.css")
+	if (payload.Settings == nil) == (payload.Bookmarks == nil) ||
+		(payload.Settings != nil && payload.Settings.Name != "settings.yaml") ||
+		(payload.Bookmarks != nil && payload.Bookmarks.Name != "bookmarks.yaml") ||
+		payload.CSS.Name != "custom.css" || (payload.Script != nil && payload.Script.Name != "custom.js") {
+		fail(w, 400, "Недопустимый набор файлов оформления")
 		return
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	changes := []change{payload.Settings, payload.CSS}
-	old := make([]document, 2)
-	raw := make([]string, 2)
-	modes := []fs.FileMode{0600, 0600}
-	paths := make([]string, 2)
+	var primary change
+	if payload.Settings != nil {
+		primary = *payload.Settings
+	} else {
+		primary = *payload.Bookmarks
+	}
+	changes := []change{primary, payload.CSS}
+	if payload.Script != nil {
+		changes = append(changes, *payload.Script)
+	}
+	old := make([]document, len(changes))
+	raw := make([]string, len(changes))
+	modes := make([]fs.FileMode, len(changes))
+	paths := make([]string, len(changes))
 	for i, c := range changes {
+		modes[i] = 0600
 		var err error
 		raw[i], _, err = s.materialize(c)
 		if err != nil {
@@ -92,15 +107,15 @@ func (s *server) saveAppearance(w http.ResponseWriter, r *http.Request) {
 		}
 		written = append(written, i)
 	}
-	settings, err := s.read("settings.yaml")
-	if err != nil {
-		fail(w, 500, err.Error())
-		return
+	result := map[string]any{}
+	for _, c := range changes {
+		doc, err := s.read(c.Name)
+		if err != nil {
+			fail(w, 500, err.Error())
+			return
+		}
+		key := map[string]string{"settings.yaml": "settings", "bookmarks.yaml": "bookmarks", "custom.css": "css", "custom.js": "script"}[c.Name]
+		result[key] = doc
 	}
-	css, err := s.read("custom.css")
-	if err != nil {
-		fail(w, 500, err.Error())
-		return
-	}
-	respond(w, 200, map[string]any{"settings": settings, "css": css})
+	respond(w, 200, result)
 }
